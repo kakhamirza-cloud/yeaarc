@@ -2,6 +2,19 @@
   command = "npm run build"
   publish = "dist"
 
+# Redirect www to apex
+[[redirects]]
+  from = "https://www.arcmfers.xyz/*"
+  to   = "https://arcmfers.xyz/:splat"
+  status = 301
+  force  = true
+
+# SPA fallback — keeps page refreshes working
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
 [[headers]]
   for = "/art/*"
   [headers.values]
