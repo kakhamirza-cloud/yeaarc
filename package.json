@@ -1,0 +1,20 @@
+{
+  "name": "arc-mfers-mint",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync:art": "node scripts/sync-art.mjs",
+    "predev": "node scripts/sync-art.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/sync-art.mjs",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ethers": "^6.14.3"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}

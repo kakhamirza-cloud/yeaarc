@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC mfers — mint on Arc Chain</title>
+    <meta
+      name="description"
+      content="ARC mfers — the first mfers on Arc Chain. Mint uniquely generated stick-figure PFPs."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="#top">ARC<span>mfers</span></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#mint">mint</a>
+        <a href="#collection">collection</a>
+        <a href="#faq">faq</a>
+      </nav>
+      <button type="button" class="wallet-btn" id="connectBtn">
+        <span id="connectLabel">connect</span>
+      </button>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="kicker">drop · arc chain</p>
+          <h1 class="wordmark">
+            ARC
+            <em>mfers</em>
+          </h1>
+          <p class="lede">
+            The first mfers on Arc. Stick figures. Blue backdrops. Yours to mint.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#mint">Mint now</a>
+            <a class="btn link" href="#collection">Browse the set →</a>
+          </div>
+        </div>
+
+        <div class="marquee" aria-hidden="true">
+          <div class="marquee-track" id="marqueeTrack"></div>
+        </div>
+      </section>
+
+      <section class="mint" id="mint">
+        <div class="mint-head">
+          <h2>Mint</h2>
+          <p>Connect, pick a qty, go.</p>
+        </div>
+
+        <div class="mint-body">
+          <figure class="mint-preview">
+            <img id="mintPreview" src="/art/69.png" alt="ARC mfer preview" width="320" height="320" />
+            <figcaption>randomized on mint</figcaption>
+          </figure>
+
+          <div class="mint-controls">
+            <div class="meta-line">
+              <span><b id="mintedLabel">— / —</b> minted</span>
+              <span><b id="mintPriceLabel">TBA</b></span>
+              <span><b>Arc Chain</b></span>
+            </div>
+            <div class="progress" aria-hidden="true">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="qty-row">
+              <span>qty</span>
+              <div class="qty">
+                <button type="button" id="qtyMinus" aria-label="Decrease">−</button>
+                <input id="qtyInput" type="number" min="1" max="10" value="1" />
+                <button type="button" id="qtyPlus" aria-label="Increase">+</button>
+              </div>
+            </div>
+
+            <button type="button" class="btn primary mint-cta" id="mintBtn">
+              Connect to mint
+            </button>
+            <p class="mint-status" id="mintStatus" role="status"></p>
+          </div>
+        </div>
+
+        <dl class="stat-strip">
+          <div>
+            <dt>supply</dt>
+            <dd id="supplyStat">5,000</dd>
+          </div>
+          <div>
+            <dt>chain</dt>
+            <dd>Arc</dd>
+          </div>
+          <div>
+            <dt>price</dt>
+            <dd id="priceStat">TBA</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="collection" id="collection">
+        <header class="section-head">
+          <h2>Collection</h2>
+          <p>Scroll the set.</p>
+        </header>
+        <div class="rail" id="collectionGrid"></div>
+      </section>
+
+      <section class="faq" id="faq">
+        <header class="section-head">
+          <h2>FAQ</h2>
+        </header>
+        <div class="faq-list">
+          <details open>
+            <summary>What are ARC mfers?</summary>
+            <p>
+              Stick-figure PFPs in the classic mfer style — the first mfers
+              collection on Arc Chain.
+            </p>
+          </details>
+          <details>
+            <summary>Which network?</summary>
+            <p>
+              Arc Chain. Your wallet will switch if you’re on the wrong network.
+            </p>
+          </details>
+          <details>
+            <summary>How do I mint?</summary>
+            <p>
+              Connect wallet, set quantity, hit mint, confirm in your wallet.
+            </p>
+          </details>
+          <details>
+            <summary>When does mint open?</summary>
+            <p>Mint is live on this page.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <img id="navMark" src="/art/420.png" alt="" width="28" height="28" />
+      <span>ARC mfers · Arc Chain</span>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
