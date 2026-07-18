@@ -9,10 +9,27 @@
   status = 301
   force  = true
 
-# SPA fallback — keeps page refreshes working
+# Clean /mint URL
 [[redirects]]
-  from   = "/*"
-  to     = "/index.html"
+  from = "/mint"
+  to = "/mint.html"
+  status = 200
+
+[[redirects]]
+  from = "/mint/"
+  to = "/mint.html"
+  status = 200
+
+# Art and other static files should not fall through to index
+[[redirects]]
+  from = "/art/*"
+  to = "/art/:splat"
+  status = 200
+
+# SPA fallback for home
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
 
 [[headers]]

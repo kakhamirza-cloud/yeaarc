@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC mfers — mint</title>
+    <meta
+      name="description"
+      content="Connect your wallet for ARC mfers. Mint opens soon."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="/">ARC<span>mfers</span></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="/">home</a>
+        <a href="/mint" aria-current="page">mint</a>
+        <a href="/#collection">collection</a>
+      </nav>
+      <button type="button" class="wallet-btn" id="connectBtn">
+        <span id="connectLabel">connect</span>
+      </button>
+    </header>
+
+    <main class="mint-page">
+      <p class="kicker">mint · arc chain</p>
+      <h1 class="mint-page-title">Connect early.</h1>
+      <p class="mint-page-copy">
+        The Arc Mfers wallet smart contract not uploaded yet. Connect your wallet
+        now and follow our socials to get notified once the minting goes live.
+      </p>
+
+      <div class="mint-card">
+        <div class="mint-card-supply">
+          <span class="mint-card-label">minted</span>
+          <strong id="mintedDisplay">— / 5,000</strong>
+        </div>
+
+        <button type="button" class="btn primary mint-cta" id="pageConnectBtn">
+          Connect Wallet
+        </button>
+
+        <a
+          class="btn notify mint-follow"
+          href="https://x.com/Arc_Mfers"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Follow @arc_mfers
+        </a>
+
+        <p class="mint-status" id="mintStatus" role="status"></p>
+      </div>
+
+      <p class="mint-page-note">
+        <a href="https://x.com/Arc_Mfers/status/2078030155121901985?s=20" target="_blank" rel="noopener noreferrer">
+          Retweet the drop →
+        </a>
+      </p>
+    </main>
+
+    <footer class="footer">
+      <img src="/art/420.png" alt="" width="28" height="28" />
+      <span>ARC mfers · Arc Chain</span>
+    </footer>
+
+    <script type="module" src="/src/mint-page.js"></script>
+  </body>
+</html>

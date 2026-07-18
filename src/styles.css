@@ -120,6 +120,9 @@ main,
   font-size: 0.78rem;
   text-transform: lowercase;
   transition: background 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .wallet-btn:hover,
@@ -479,6 +482,83 @@ main,
   width: 100%;
   margin-top: 1.1rem;
   padding: 1rem;
+  text-decoration: none;
+}
+
+/* —— Dedicated /mint page —— */
+.mint-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: clamp(3rem, 10vh, 6rem) clamp(1rem, 4vw, 2.5rem) 4rem;
+}
+
+.mint-page-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 7vw, 3.6rem);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.mint-page-copy {
+  margin: 1.1rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.mint-card {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  background: rgba(8, 16, 28, 0.75);
+}
+
+.mint-card-supply {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.mint-card-label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mint-card-supply strong {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+}
+
+.mint-follow {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.95rem 1.2rem;
+  text-decoration: none;
+}
+
+.mint-page-note {
+  margin: 1.5rem 0 0;
+  font-size: 0.82rem;
+}
+
+.mint-page-note a {
+  color: var(--muted);
+}
+
+.mint-page-note a:hover {
+  color: var(--accent);
+}
+
+.nav-links a[aria-current="page"] {
+  color: var(--ink);
 }
 
 .mint-status {

@@ -25,13 +25,13 @@
     <header class="nav">
       <a class="brand" href="#top">ARC<span>mfers</span></a>
       <nav class="nav-links" aria-label="Primary">
-        <a href="#mint">mint</a>
+        <a href="/mint">mint</a>
         <a href="#collection">collection</a>
         <a href="#faq">faq</a>
       </nav>
-      <button type="button" class="wallet-btn" id="connectBtn">
+      <a class="wallet-btn" href="/mint" id="connectBtn">
         <span id="connectLabel">connect</span>
-      </button>
+      </a>
     </header>
 
     <main id="top">
@@ -47,7 +47,7 @@
               The first mfers on Arc. Stick figures. Blue backdrops. Yours to mint.
             </p>
             <div class="hero-actions">
-              <button type="button" class="btn primary" id="heroMintBtn">Mint now</button>
+              <a class="btn primary" href="/mint">Mint now</a>
               <a
                 class="btn notify"
                 href="https://x.com/Arc_Mfers"
@@ -58,7 +58,6 @@
               </a>
               <a class="btn link" href="#collection">Browse the set →</a>
             </div>
-            <p class="hero-status" id="heroStatus" role="status"></p>
           </div>
 
           <aside class="hero-social">
@@ -90,7 +89,7 @@
       <section class="mint" id="mint">
         <div class="mint-head">
           <h2>Mint</h2>
-          <p>Coming soon. Follow for the drop.</p>
+          <p>Connect early. Contract goes live soon.</p>
         </div>
 
         <div class="mint-body">
@@ -109,18 +108,7 @@
               <div class="progress-bar" id="progressBar"></div>
             </div>
 
-            <div class="qty-row">
-              <span>qty</span>
-              <div class="qty">
-                <button type="button" id="qtyMinus" aria-label="Decrease">−</button>
-                <input id="qtyInput" type="number" min="1" max="10" value="1" />
-                <button type="button" id="qtyPlus" aria-label="Increase">+</button>
-              </div>
-            </div>
-
-            <button type="button" class="btn primary mint-cta" id="mintBtn">
-              Connect to mint
-            </button>
+            <a class="btn primary mint-cta" href="/mint">Connect to mint</a>
             <p class="mint-status" id="mintStatus" role="status"></p>
           </div>
         </div>
