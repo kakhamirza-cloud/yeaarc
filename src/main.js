@@ -6,7 +6,7 @@ const FALLBACK_IDS = [
 ];
 
 const els = {
-  marqueeTrack: document.getElementById("marqueeTrack"),
+  heroCollage: document.getElementById("heroCollage"),
   collectionGrid: document.getElementById("collectionGrid"),
   mintPreview: document.getElementById("mintPreview"),
   navMark: document.getElementById("navMark"),
@@ -32,9 +32,9 @@ function pick(ids, n) {
   return copy.slice(0, n);
 }
 
-function makeTile(id) {
-  const tile = document.createElement("button");
-  tile.type = "button";
+function makeTile(id, { interactive = true } = {}) {
+  const tile = document.createElement(interactive ? "button" : "div");
+  if (interactive) tile.type = "button";
   tile.className = "tile";
   tile.setAttribute("aria-label", `ARC mfer #${id}`);
 
@@ -46,7 +46,10 @@ function makeTile(id) {
   img.height = 200;
   tile.appendChild(img);
 
-  tile.addEventListener("click", () => setPreview(id));
+  if (interactive) {
+    tile.addEventListener("click", () => setPreview(id));
+  }
+
   return tile;
 }
 
@@ -55,10 +58,13 @@ function setPreview(id) {
   if (els.navMark) els.navMark.src = artUrl(id);
 }
 
-function renderMarquee(ids) {
-  els.marqueeTrack.innerHTML = "";
-  const loop = [...ids, ...ids];
-  loop.forEach((id) => els.marqueeTrack.appendChild(makeTile(id)));
+function renderCollage(ids) {
+  els.heroCollage.innerHTML = "";
+  ids.slice(0, 18).forEach((id, i) => {
+    const tile = makeTile(id, { interactive: false });
+    tile.style.animationDelay = `${i * 40}ms`;
+    els.heroCollage.appendChild(tile);
+  });
 }
 
 function renderCollection(ids) {
@@ -78,10 +84,10 @@ async function loadArtIds() {
     /* fallback ids already set */
   }
 
-  const marqueeIds = pick(artIds, 24);
-  setPreview(marqueeIds[0] ?? 69);
-  renderMarquee(marqueeIds);
-  renderCollection(pick(artIds, 28));
+  const collageIds = pick(artIds, 18);
+  setPreview(collageIds[0] ?? 69);
+  renderCollage(collageIds);
+  renderCollection(pick(artIds, 36));
 }
 
 els.priceStat.textContent = formatPrice(CONFIG.mintPrice);

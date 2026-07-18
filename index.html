@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/styles.css" />
@@ -23,123 +23,110 @@
     </div>
 
     <header class="nav">
-      <a class="brand" href="#top">ARC<span>mfers</span></a>
-      <nav class="nav-links" aria-label="Primary">
-        <a href="/mint">mint</a>
-        <a href="#collection">collection</a>
+      <a class="brand" href="#top">arc<span>_mfers</span></a>
+      <div class="nav-right">
+        <a href="#gallery">gallery</a>
         <a href="#faq">faq</a>
-      </nav>
-      <a class="wallet-btn" href="/mint" id="connectBtn">
-        <span id="connectLabel">connect</span>
-      </a>
+        <a class="wallet-btn" href="/mint">connect</a>
+      </div>
     </header>
 
     <main id="top">
       <section class="hero">
-        <div class="hero-top">
-          <div class="hero-copy">
-            <p class="kicker">drop · arc chain</p>
-            <h1 class="wordmark">
-              ARC
-              <em>mfers</em>
-            </h1>
-            <p class="lede">
-              The first mfers on Arc. Stick figures. Blue backdrops. Yours to mint.
-            </p>
-            <div class="hero-actions">
-              <a class="btn primary" href="/mint">Mint now</a>
-              <a
-                class="btn notify"
-                href="https://x.com/Arc_Mfers"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Notify me
-              </a>
-              <a class="btn link" href="#collection">Browse the set →</a>
-            </div>
-          </div>
+        <div class="hero-collage" id="heroCollage" aria-hidden="true"></div>
+        <div class="hero-veil" aria-hidden="true"></div>
 
-          <aside class="hero-social">
-            <p class="social-label">stay close</p>
+        <div class="hero-content">
+          <p class="kicker">first mfers · arc chain</p>
+          <h1 class="wordmark">arc mfers</h1>
+          <p class="lede">
+            Stick figures on navy. Mint on Arc when the contract goes live.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="/mint">Enter mint</a>
             <a
-              class="social-link"
+              class="btn ghost"
               href="https://x.com/Arc_Mfers"
               target="_blank"
               rel="noopener noreferrer"
             >
-              follow @arc_mfers
+              Notify me
             </a>
-            <a
-              class="social-link"
-              href="https://x.com/Arc_Mfers/status/2078030155121901985?s=20"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              retweet the drop →
-            </a>
-          </aside>
+          </div>
         </div>
 
-        <div class="marquee" aria-hidden="true">
-          <div class="marquee-track" id="marqueeTrack"></div>
+        <aside class="hero-stamp">
+          <a href="https://x.com/Arc_Mfers" target="_blank" rel="noopener noreferrer">
+            follow @arc_mfers
+          </a>
+          <a
+            href="https://x.com/Arc_Mfers/status/2078030155121901985?s=20"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            retweet
+          </a>
+        </aside>
+      </section>
+
+      <section class="ticker" aria-label="Drop details">
+        <div>
+          <span>supply</span>
+          <strong id="supplyStat">5,000</strong>
+        </div>
+        <div>
+          <span>price</span>
+          <strong id="priceStat">TBA</strong>
+        </div>
+        <div>
+          <span>chain</span>
+          <strong>Arc</strong>
+        </div>
+        <div>
+          <span>status</span>
+          <strong>coming soon</strong>
         </div>
       </section>
 
-      <section class="mint" id="mint">
-        <div class="mint-head">
-          <h2>Mint</h2>
-          <p>Connect early. Contract goes live soon.</p>
+      <section class="spotlight" id="mint">
+        <div class="spotlight-art">
+          <img id="mintPreview" src="/art/69.png" alt="ARC mfer preview" width="480" height="480" />
         </div>
-
-        <div class="mint-body">
-          <figure class="mint-preview">
-            <img id="mintPreview" src="/art/69.png" alt="ARC mfer preview" width="320" height="320" />
-            <figcaption>randomized on mint</figcaption>
-          </figure>
-
-          <div class="mint-controls">
-            <div class="meta-line">
-              <span><b id="mintedLabel">— / —</b> minted</span>
-              <span><b id="mintPriceLabel">TBA</b></span>
-              <span><b>Arc Chain</b></span>
+        <div class="spotlight-copy">
+          <p class="kicker">coming soon</p>
+          <h2>Connect before the drop.</h2>
+          <p>
+            The smart contract is not live yet. Connect your wallet on the mint
+            page and follow @arc_mfers for the announcement.
+          </p>
+          <dl class="spotlight-meta">
+            <div>
+              <dt>minted</dt>
+              <dd id="mintedLabel">— / 5,000</dd>
             </div>
-            <div class="progress" aria-hidden="true">
-              <div class="progress-bar" id="progressBar"></div>
+            <div>
+              <dt>price</dt>
+              <dd id="mintPriceLabel">TBA</dd>
             </div>
-
-            <a class="btn primary mint-cta" href="/mint">Connect to mint</a>
-            <p class="mint-status" id="mintStatus" role="status"></p>
+          </dl>
+          <a class="btn primary" href="/mint">Connect wallet</a>
+          <div class="progress" aria-hidden="true">
+            <div class="progress-bar" id="progressBar"></div>
           </div>
         </div>
-
-        <dl class="stat-strip">
-          <div>
-            <dt>supply</dt>
-            <dd id="supplyStat">5,000</dd>
-          </div>
-          <div>
-            <dt>chain</dt>
-            <dd>Arc</dd>
-          </div>
-          <div>
-            <dt>price</dt>
-            <dd id="priceStat">TBA</dd>
-          </div>
-        </dl>
       </section>
 
-      <section class="collection" id="collection">
+      <section class="gallery" id="gallery">
         <header class="section-head">
-          <h2>Collection</h2>
-          <p>Scroll the set.</p>
+          <h2>gallery</h2>
+          <p>Tap any mfer to pin it above.</p>
         </header>
-        <div class="rail" id="collectionGrid"></div>
+        <div class="masonry" id="collectionGrid"></div>
       </section>
 
       <section class="faq" id="faq">
         <header class="section-head">
-          <h2>FAQ</h2>
+          <h2>faq</h2>
         </header>
         <div class="faq-list">
           <details open>
@@ -158,7 +145,8 @@
           <details>
             <summary>How do I mint?</summary>
             <p>
-              Connect wallet, set quantity, hit mint, confirm in your wallet.
+              Open the mint page, connect your wallet, and wait for the contract
+              announcement on X.
             </p>
           </details>
           <details>
@@ -171,7 +159,7 @@
 
     <footer class="footer">
       <img id="navMark" src="/art/420.png" alt="" width="28" height="28" />
-      <span>ARC mfers · Arc Chain</span>
+      <span>arc mfers · arc chain</span>
     </footer>
 
     <script type="module" src="/src/main.js"></script>
