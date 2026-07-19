@@ -12,8 +12,14 @@ import { fileURLToPath } from "node:url";
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PROJECT = join(ROOT, "..");
 const DEST = join(PROJECT, "public", "art");
+const GALLERY = join(PROJECT, "public", "gallery");
 
-// Prefer sibling ARC Mfers output; fall back if Netlify/CI already has public/art
+// Cloudflare / CI cannot ship ~9k PNGs — use gallery samples only
+const lightDeploy =
+  process.env.SKIP_FULL_ART === "1" ||
+  process.env.CF_PAGES === "1" ||
+  process.env.CI === "true";
+
 const SOURCES = [
   join(PROJECT, "..", "ARC Mfers", "output", "mfers"),
   join(PROJECT, "art-source"),
@@ -21,22 +27,12 @@ const SOURCES = [
 
 const source = SOURCES.find((p) => existsSync(p));
 
-if (!source) {
-  if (existsSync(DEST) && readdirSync(DEST).some((f) => f.endsWith(".png"))) {
-    writeIds(DEST);
-    console.log(`Using existing ${DEST}`);
-    process.exit(0);
-  }
-  // Site uses /gallery samples in git — skip full art sync on Netlify/CI
-  console.log(
-    "No art source found; skipping sync (gallery samples are enough for deploy)."
-  );
+if (lightDeploy || !source) {
+  ensureLightArt();
   process.exit(0);
 }
 
 mkdirSync(DEST, { recursive: true });
-
-// Clean old PNGs so deleted tokens don't linger, keep folder
 for (const name of readdirSync(DEST)) {
   if (name.endsWith(".png") || name === "ids.json") {
     rmSync(join(DEST, name), { force: true });
@@ -50,6 +46,33 @@ for (const file of files) {
 
 writeIds(DEST);
 console.log(`Synced ${files.length} images → public/art`);
+
+/** Copy gallery samples into /art so production deploys stay small. */
+function ensureLightArt() {
+  mkdirSync(DEST, { recursive: true });
+
+  // Wipe previous full sync so Cloudflare doesn't upload 900MB
+  for (const name of readdirSync(DEST)) {
+    if (name.endsWith(".png") || name === "ids.json") {
+      rmSync(join(DEST, name), { force: true });
+    }
+  }
+
+  if (!existsSync(GALLERY)) {
+    console.log("No gallery/ folder; public/art left empty for this build.");
+    writeFileSync(join(DEST, "ids.json"), JSON.stringify({ count: 0, ids: [] }));
+    return;
+  }
+
+  const files = readdirSync(GALLERY).filter((f) => f.toLowerCase().endsWith(".png"));
+  for (const file of files) {
+    cpSync(join(GALLERY, file), join(DEST, file));
+  }
+  writeIds(DEST);
+  console.log(
+    `Light deploy: copied ${files.length} gallery samples → public/art (full set skipped for Cloudflare).`
+  );
+}
 
 function writeIds(dir) {
   const ids = readdirSync(dir)

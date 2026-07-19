@@ -1,8 +1,7 @@
-# ARC mfers — Cloudflare static deploy
-name = "arcmfers"
+# Must match your Cloudflare Workers/Pages project name (repo: yeaarc)
+name = "yeaarc"
 compatibility_date = "2026-07-18"
 
-# Required by current wrangler deploy (Workers static assets)
 [assets]
 directory = "./dist"
 not_found_handling = "404-page"

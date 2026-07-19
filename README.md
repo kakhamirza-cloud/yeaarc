@@ -7,30 +7,18 @@ npm run dev
 
 → [http://localhost:5174](http://localhost:5174)
 
-## Cloudflare Pages
+## Cloudflare
 
-Build settings (dashboard or Git):
-
-- Build command: `npm run build`
-- Output directory: `dist`
-- Root: `/` (this repo)
-
-Deploy from your machine (after `npx wrangler login`):
-
+**Build command in dashboard:**
 ```bash
+npm run build
+```
+(Cloudflare sets `CI=true`, so the build uses gallery samples only — not all 9k PNGs.)
+
+**Or deploy from your PC:**
+```bash
+npm run cf:login
 npm run deploy
 ```
 
-Env vars (Pages → Settings → Environment variables):
-
-```
-VITE_CONTRACT_ADDRESS=
-VITE_MINT_PRICE=TBA
-VITE_MAX_SUPPLY=5000
-```
-
-Custom domain: Pages → Custom domains → add `arcmfers.xyz` (and `www`).
-
-## Art
-
-`npm run sync:art` copies PNGs into `public/art/` before build. Large deploys may be slow; later you can move art to R2/IPFS.
+Do **not** upload the full `public/art` set to Cloudflare — it’s ~900MB and breaks Workers deploys. Full art stays local / IPFS for mint later.
