@@ -86,3 +86,27 @@ els.mintedLabel.textContent = `— / ${CONFIG.maxSupply.toLocaleString()}`;
 els.progressBar.style.width = "0%";
 
 bootGallery();
+
+async function loadLadderKing() {
+  const line = document.getElementById("ladderKingLine");
+  const cta = document.getElementById("ladderKingCta");
+  if (!line) return;
+  try {
+    const res = await fetch("/api/leaderboard", { cache: "no-store" });
+    if (!res.ok) throw new Error("lb");
+    const data = await res.json();
+    const top = Array.isArray(data.scores) ? data.scores[0] : null;
+    if (!top) {
+      line.textContent = "No climbs yet — be the first #1.";
+      if (cta) cta.textContent = "Play the game";
+      return;
+    }
+    line.textContent = `#1 @${top.name} — ${top.score} height`;
+    if (cta) cta.textContent = `Play to dethrone @${top.name}`;
+  } catch {
+    line.textContent = "Climb the ladder. Board resets every Sunday.";
+    if (cta) cta.textContent = "Play the game";
+  }
+}
+
+loadLadderKing();

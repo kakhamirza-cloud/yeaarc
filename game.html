@@ -31,12 +31,22 @@
 
     <main class="game-shell">
       <!-- Character select -->
-      <section class="game-screen" id="screenSelect">
-        <p class="kicker">mini game</p>
-        <h1 class="game-title">ladder climb</h1>
-        <p class="game-sub">Pick your mfer, then climb as high as you can in 30 seconds.</p>
-        <div class="char-grid" id="charGrid"></div>
-        <button type="button" class="btn primary" id="btnConfirmChar" disabled>Continue</button>
+      <section class="game-screen select-screen" id="screenSelect">
+        <div class="select-layout">
+          <aside class="select-top3" aria-label="Live top 3">
+            <p class="kicker">live top 3</p>
+            <h2 class="top3-title">climb ranks</h2>
+            <ol class="top3-list" id="selectTop3"></ol>
+            <p class="top3-reset">Board resets every Sunday.</p>
+          </aside>
+          <div class="select-main">
+            <p class="kicker">mini game</p>
+            <h1 class="game-title">ladder climb</h1>
+            <p class="game-sub">Pick your mfer, then climb as high as you can in 30 seconds.</p>
+            <div class="char-grid" id="charGrid"></div>
+            <button type="button" class="btn primary" id="btnConfirmChar" disabled>Continue</button>
+          </div>
+        </div>
       </section>
 
       <!-- Tutorial -->
@@ -53,6 +63,7 @@
           </li>
           <li>Each tap moves you up <strong>one ladder line</strong>.</li>
           <li>Climb as high as possible before the <strong>⏱ 30s</strong> timer ends.</li>
+          <li>Leaderboard <strong>resets every Sunday</strong> — flex your score before it wipes.</li>
         </ul>
         <div class="control-hint">
           <p><strong>Desktop:</strong> ← and → arrow keys (any mix is fine)</p>
@@ -117,7 +128,7 @@
 
         <p class="lb-rule">
           To make your leaderboard entry valid, <strong>post your score on X and tag @arc_mfers</strong>.
-          We use your Twitter username on the board.
+          We use your Twitter username on the board. <strong>Board resets every Sunday.</strong>
         </p>
 
         <form class="score-form" id="scoreForm">
@@ -139,7 +150,7 @@
         </form>
         <p class="game-note" id="submitNote"></p>
         <h2 class="lb-title">top 10 leaderboard</h2>
-        <p class="lb-live-hint">Live top 10 — updates when someone climbs past you.</p>
+        <p class="lb-live-hint">Live top 10 — updates when someone climbs past you. Resets every Sunday.</p>
         <ol class="leaderboard" id="leaderboard"></ol>
         <div class="result-actions">
           <button type="button" class="btn primary" id="btnReplay">Play again</button>

@@ -356,6 +356,39 @@ main,
   line-height: 1.55;
 }
 
+.ladder-king {
+  margin: 0 0 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(62, 176, 255, 0.35);
+  background: rgba(62, 176, 255, 0.08);
+  max-width: 28rem;
+}
+
+.ladder-king-label {
+  margin: 0 0 0.35rem !important;
+  color: var(--accent) !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  max-width: none !important;
+}
+
+.ladder-king-line {
+  margin: 0 0 0.45rem !important;
+  color: var(--ink) !important;
+  font-family: var(--font-display);
+  font-size: 1.25rem !important;
+  font-weight: 400;
+  max-width: none !important;
+}
+
+.ladder-king-reset {
+  margin: 0 !important;
+  color: var(--muted) !important;
+  font-size: 0.75rem !important;
+  max-width: none !important;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

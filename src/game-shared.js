@@ -28,7 +28,12 @@ export function normalizeWallet(raw) {
 
 export function buildScoreTweet({ score, username }) {
   const who = username ? `@${username}` : "I";
-  return `${who} just climbed ${score} height on the ARC mfers ladder climb! @${TWITTER_HANDLE} #arcmfers`;
+  return `${who} just climbed ${score} on the ARC mfers ladder 🧗 Can you beat that? @${TWITTER_HANDLE} #arcmfers\n\nBoard resets every Sunday.`;
+}
+
+export function buildPrizeTweet({ prizeName, username }) {
+  const who = username ? `@${username}` : "I";
+  return `${who} just spun the 🎡 and won ${prizeName} on ARC mfers 🔥 @${TWITTER_HANDLE} #arcmfers`;
 }
 
 export function tweetIntentUrl(text) {

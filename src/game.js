@@ -5,6 +5,7 @@ import {
   TWITTER_HANDLE,
   normalizeTwitterUser,
   buildScoreTweet,
+  buildPrizeTweet,
   tweetIntentUrl,
 } from "./game-shared.js";
 
@@ -43,6 +44,7 @@ const els = {
   btnTweet: document.getElementById("btnTweet"),
   submitNote: document.getElementById("submitNote"),
   leaderboard: document.getElementById("leaderboard"),
+  selectTop3: document.getElementById("selectTop3"),
   btnReplay: document.getElementById("btnReplay"),
   wheelPanel: document.getElementById("wheelPanel"),
   wheelTitle: document.getElementById("wheelTitle"),
@@ -96,7 +98,8 @@ function show(screen) {
   for (const key of ["select", "tutorial", "play", "results"]) {
     els[key].classList.toggle("hidden", els[key] !== screen);
   }
-  if (screen === els.results) startLbPoll();
+  // Keep top 3 fresh on select + results
+  if (screen === els.results || screen === els.select) startLbPoll();
   else stopLbPoll();
 }
 
@@ -165,15 +168,33 @@ function renderLeaderboard(hl = highlightScore) {
     const li = document.createElement("li");
     li.innerHTML = `<span class="rank">—</span><span>no climbs yet</span><span class="pts">0</span>`;
     els.leaderboard.appendChild(li);
+  } else {
+    const hlIndex =
+      hl != null ? list.findIndex((r) => r.score === hl) : -1;
+    list.forEach((row, i) => {
+      const li = document.createElement("li");
+      if (i === hlIndex) li.style.color = "var(--accent)";
+      li.innerHTML = `<span class="rank">#${i + 1}</span><span>@${escapeHtml(row.name)}</span><span class="pts">${row.score}</span>`;
+      els.leaderboard.appendChild(li);
+    });
+  }
+  renderSelectTop3();
+}
+
+function renderSelectTop3() {
+  if (!els.selectTop3) return;
+  const top = [...liveScores].sort((a, b) => b.score - a.score).slice(0, 3);
+  els.selectTop3.innerHTML = "";
+  if (!top.length) {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="rank">—</span><span>be the first</span><span class="pts">0</span>`;
+    els.selectTop3.appendChild(li);
     return;
   }
-  const hlIndex =
-    hl != null ? list.findIndex((r) => r.score === hl) : -1;
-  list.forEach((row, i) => {
+  top.forEach((row, i) => {
     const li = document.createElement("li");
-    if (i === hlIndex) li.style.color = "var(--accent)";
     li.innerHTML = `<span class="rank">#${i + 1}</span><span>@${escapeHtml(row.name)}</span><span class="pts">${row.score}</span>`;
-    els.leaderboard.appendChild(li);
+    els.selectTop3.appendChild(li);
   });
 }
 
@@ -705,6 +726,16 @@ async function claimPrize(e) {
     els.wheelNote.textContent = `Claimed ${data.prizeName}! We'll use @${twitter} + your wallet.`;
     els.claimForm.classList.add("hidden");
     claimToken = null;
+    // Offer a brag tweet for the win
+    const brag = document.createElement("a");
+    brag.className = "btn play";
+    brag.href = tweetIntentUrl(buildPrizeTweet({ prizeName: data.prizeName, username: twitter }));
+    brag.target = "_blank";
+    brag.rel = "noopener noreferrer";
+    brag.textContent = "Brag on X";
+    brag.style.marginTop = "0.65rem";
+    brag.style.display = "inline-flex";
+    els.wheelNote.after(brag);
   } catch {
     els.wheelNote.textContent = "Claim failed — try again.";
   }
