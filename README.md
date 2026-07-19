@@ -7,18 +7,30 @@ npm run dev
 
 → [http://localhost:5174](http://localhost:5174)
 
-## Images on Netlify
+## Cloudflare Pages
 
-Locally, art lives in `../ARC Mfers/output/mfers`. Netlify does **not** have that folder, so images must ship inside this project.
+Build settings (dashboard or Git):
 
-`npm run sync:art` (also runs before `dev` / `build`) copies them into `public/art/`.
+- Build command: `npm run build`
+- Output directory: `dist`
+- Root: `/` (this repo)
 
-**To deploy with images:**
+Deploy from your machine (after `npx wrangler login`):
 
-1. Run `npm run sync:art` on your machine  
-2. Commit and push `public/art/` (or upload a folder that includes it)  
-3. Netlify build publishes `dist`, which includes `/art/*.png`
+```bash
+npm run deploy
+```
 
-If Netlify only has this repo (no sibling `ARC Mfers`), keep `public/art` in git so the build always has the images.
+Env vars (Pages → Settings → Environment variables):
 
-Set `VITE_CONTRACT_ADDRESS` (and optionally `VITE_MINT_PRICE`) in Netlify env when the contract is ready.
+```
+VITE_CONTRACT_ADDRESS=
+VITE_MINT_PRICE=TBA
+VITE_MAX_SUPPLY=5000
+```
+
+Custom domain: Pages → Custom domains → add `arcmfers.xyz` (and `www`).
+
+## Art
+
+`npm run sync:art` copies PNGs into `public/art/` before build. Large deploys may be slow; later you can move art to R2/IPFS.

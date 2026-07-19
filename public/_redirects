@@ -1,0 +1,6 @@
+# Clean /mint URL → mint.html (200 = rewrite, URL stays /mint)
+/mint    /mint.html   200
+/mint/   /mint.html   200
+
+# www → apex (set up both hostnames in Cloudflare; this helps if www hits Pages)
+https://www.arcmfers.xyz/*  https://arcmfers.xyz/:splat  301
