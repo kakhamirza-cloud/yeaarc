@@ -75,7 +75,7 @@ function renderCollection(ids) {
 
 async function loadArtIds() {
   try {
-    const res = await fetch("/art/ids.json");
+    const res = await fetch("/art/ids.json?v=3");
     if (!res.ok) throw new Error("ids fetch failed");
     const data = await res.json();
     if (Array.isArray(data.ids) && data.ids.length) {
