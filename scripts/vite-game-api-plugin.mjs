@@ -136,6 +136,9 @@ export function viteGameApiPlugin() {
             delete wheel.pending[claimToken];
             return send(res, 400, { error: "already claimed" });
           }
+          if (wheel.winners.some((w) => normalizeWallet(w.wallet) === wallet)) {
+            return send(res, 400, { error: "this wallet already claimed a prize" });
+          }
           if (wheel.winners.length >= wheel.limit) {
             delete wheel.pending[claimToken];
             return send(res, 200, { result: "unavailable", ...wheelPublicStatus(wheel) });

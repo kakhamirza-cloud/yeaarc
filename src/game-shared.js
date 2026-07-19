@@ -8,7 +8,7 @@ export const PICKUP_EMOJI = {
 
 export const TWITTER_HANDLE = "arc_mfers";
 
-export const WHEEL_ZONK_CHANCE = 0.95; // 5% prize
+export const WHEEL_ZONK_CHANCE = 0.99; // 1% prize
 export const WHEEL_DEFAULT_PRIZE = "Free Mfer Arc";
 export const WHEEL_DEFAULT_LIMIT = 3;
 
@@ -22,7 +22,7 @@ export function normalizeTwitterUser(raw) {
 
 export function normalizeWallet(raw) {
   const w = String(raw || "").trim();
-  if (/^0x[a-fA-F0-9]{40}$/.test(w)) return w;
+  if (/^0x[a-fA-F0-9]{40}$/.test(w)) return w.toLowerCase();
   return "";
 }
 

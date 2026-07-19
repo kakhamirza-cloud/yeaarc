@@ -17,7 +17,7 @@ const LB_POLL_MS = 3000;
 const LB_TOP = 10;
 const PICKUP_TYPES = ["boost", "hazard"];
 const WHEEL_SPAWN_CHANCE = 0.2; // slight chance per run
-const WHEEL_MIN_HEIGHT = 100;
+const WHEEL_MIN_HEIGHT = 150;
 
 const els = {
   select: document.getElementById("screenSelect"),
@@ -250,9 +250,9 @@ function resetRound() {
 function planWheelToken() {
   wheelRung = null;
   wheelSpawned = false;
-  // Slight chance each run; random height at/above 100 (e.g. 100, 111, 200, 300…)
+  // Slight chance each run; random height at/above 150 (e.g. 150, 200, 300, 412…)
   if (Math.random() > WHEEL_SPAWN_CHANCE) return;
-  wheelRung = WHEEL_MIN_HEIGHT + Math.floor(Math.random() * 401); // 100–500
+  wheelRung = WHEEL_MIN_HEIGHT + Math.floor(Math.random() * 351); // 150–500
 }
 
 function seedEntities() {
@@ -796,7 +796,7 @@ els.btnReplay.addEventListener("click", () => {
 els.btnSpin.addEventListener("click", () => spinWheel());
 els.btnSkipWheel.addEventListener("click", () => {
   discardWheelToken();
-  els.wheelNote.textContent = "Token discarded. Find another 🎡 above height 100.";
+  els.wheelNote.textContent = "Token discarded. Find another 🎡 above height 150.";
 });
 els.claimForm.addEventListener("submit", claimPrize);
 

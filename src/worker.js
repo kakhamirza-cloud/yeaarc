@@ -162,6 +162,9 @@ async function handleWheel(request, env, pathname) {
       await writeWheel(env, wheel);
       return json({ error: "already claimed" }, 400);
     }
+    if (wheel.winners.some((w) => normalizeWallet(w.wallet) === wallet)) {
+      return json({ error: "this wallet already claimed a prize" }, 400);
+    }
     if (wheel.winners.length >= wheel.limit) {
       delete wheel.pending[claimToken];
       await writeWheel(env, wheel);
