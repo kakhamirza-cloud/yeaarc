@@ -1,4 +1,8 @@
-# Cloudflare Pages project for ARC mfers
+# ARC mfers — Cloudflare static deploy
 name = "arcmfers"
 compatibility_date = "2026-07-18"
-pages_build_output_dir = "dist"
+
+# Required by current wrangler deploy (Workers static assets)
+[assets]
+directory = "./dist"
+not_found_handling = "404-page"

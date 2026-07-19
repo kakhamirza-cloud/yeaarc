@@ -10,7 +10,8 @@
     "prebuild": "node scripts/sync-art.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy dist --project-name=arcmfers",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name=arcmfers",
     "cf:login": "wrangler login",
     "cf:whoami": "wrangler whoami"
   },
