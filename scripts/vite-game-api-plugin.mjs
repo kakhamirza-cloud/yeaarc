@@ -8,7 +8,9 @@ import {
   normalizeWallet,
   createWheelState,
   wheelPublicStatus,
-  WHEEL_ZONK_CHANCE,
+  rollWheelPrize,
+  serializeWheelState,
+  countPrizeClaims,
 } from "../src/game-shared.js";
 
 const TOP_PUBLIC = 10;
@@ -34,6 +36,51 @@ function send(res, status, data) {
 
 function newClaimToken() {
   return `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function applyAdminAction(wheel, scores, data) {
+  const action = String(data?.action || "");
+  if (action === "reset") {
+    wheel.winners = [];
+    wheel.pending = {};
+  } else if (action === "resetLeaderboard") {
+    scores.length = 0;
+  } else if (action === "removeLeaderboardName") {
+    const name = normalizeTwitterUser(data?.name);
+    if (!name) return { error: "twitter username required", status: 400 };
+    const kept = scores.filter((row) => normalizeTwitterUser(row.name) !== name);
+    scores.length = 0;
+    scores.push(...kept);
+  } else if (action === "setPrize") {
+    // Free Mfer Arc name
+    const prizeName = String(data?.prizeName || "").trim().slice(0, 48);
+    if (!prizeName) return { error: "prize name required", status: 400 };
+    wheel.prizes.free.name = prizeName;
+  } else if (action === "setLimit") {
+    // Free Mfer Arc limit
+    const limit = Math.floor(Number(data?.limit));
+    if (!Number.isFinite(limit) || limit < 0 || limit > 1000) {
+      return { error: "invalid limit", status: 400 };
+    }
+    wheel.prizes.free.limit = limit;
+  } else if (action === "setWhitelistPrize") {
+    const prizeName = String(data?.prizeName || "").trim().slice(0, 48);
+    if (!prizeName) return { error: "whitelist prize name required", status: 400 };
+    wheel.prizes.whitelist.name = prizeName;
+  } else if (action === "setWhitelistLimit") {
+    const limit = Math.floor(Number(data?.limit));
+    if (!Number.isFinite(limit) || limit < 0 || limit > 5000) {
+      return { error: "invalid whitelist limit", status: 400 };
+    }
+    wheel.prizes.whitelist.limit = limit;
+  } else if (action === "setPassword") {
+    const next = String(data?.newPassword || "").trim();
+    if (next.length < 6) return { error: "password too short", status: 400 };
+    wheel.adminPassword = next;
+  } else {
+    return { error: "unknown action", status: 400 };
+  }
+  return { ok: true };
 }
 
 export function viteGameApiPlugin() {
@@ -86,31 +133,19 @@ export function viteGameApiPlugin() {
           const twitter = normalizeTwitterUser(data?.twitter);
           if (!twitter) return send(res, 400, { error: "twitter username required" });
 
-          const status = wheelPublicStatus(wheel);
-          if (!status.available) {
-            return send(res, 200, { result: "unavailable", ...status });
-          }
-
-          const already = wheel.winners.some((w) => w.twitter === twitter);
-          if (already) {
-            return send(res, 200, {
-              result: "zonk",
-              reason: "already_won",
-              message: `You already claimed ${wheel.prizeName}.`,
-              ...status,
-            });
-          }
-
-          const roll = Math.random();
-          if (roll < WHEEL_ZONK_CHANCE) {
-            return send(res, 200, { result: "zonk", ...status });
-          }
+          const rolled = rollWheelPrize(wheel, twitter);
+          if (rolled.result !== "prize") return send(res, 200, rolled);
 
           const claimToken = newClaimToken();
-          wheel.pending[claimToken] = { twitter, at: Date.now() };
+          wheel.pending[claimToken] = {
+            twitter,
+            prizeId: rolled.prizeId,
+            at: Date.now(),
+          };
           return send(res, 200, {
             result: "prize",
-            prizeName: wheel.prizeName,
+            prizeId: rolled.prizeId,
+            prizeName: rolled.prizeName,
             claimToken,
             ...wheelPublicStatus(wheel),
           });
@@ -129,17 +164,24 @@ export function viteGameApiPlugin() {
           if (!claimToken || !wheel.pending[claimToken]) {
             return send(res, 400, { error: "invalid or expired claim" });
           }
-          if (wheel.pending[claimToken].twitter !== twitter) {
+          const pending = wheel.pending[claimToken];
+          if (pending.twitter !== twitter) {
             return send(res, 400, { error: "twitter does not match spin" });
           }
-          if (wheel.winners.some((w) => w.twitter === twitter)) {
+          const prizeId = pending.prizeId || "free";
+          const prize = wheel.prizes[prizeId];
+          if (!prize) {
             delete wheel.pending[claimToken];
-            return send(res, 400, { error: "already claimed" });
+            return send(res, 400, { error: "unknown prize" });
+          }
+          if (wheel.winners.some((w) => w.twitter === twitter && (w.prizeId || "free") === prizeId)) {
+            delete wheel.pending[claimToken];
+            return send(res, 400, { error: "already claimed this prize" });
           }
           if (wheel.winners.some((w) => normalizeWallet(w.wallet) === wallet)) {
             return send(res, 400, { error: "this wallet already claimed a prize" });
           }
-          if (wheel.winners.length >= wheel.limit) {
+          if (countPrizeClaims(wheel, prizeId) >= prize.limit) {
             delete wheel.pending[claimToken];
             return send(res, 200, { result: "unavailable", ...wheelPublicStatus(wheel) });
           }
@@ -148,12 +190,14 @@ export function viteGameApiPlugin() {
           wheel.winners.push({
             twitter,
             wallet,
-            prizeName: wheel.prizeName,
+            prizeId,
+            prizeName: prize.name,
             at: Date.now(),
           });
           return send(res, 200, {
             ok: true,
-            prizeName: wheel.prizeName,
+            prizeId,
+            prizeName: prize.name,
             ...wheelPublicStatus(wheel),
           });
         }
@@ -161,15 +205,9 @@ export function viteGameApiPlugin() {
         if (url === "/api/wheel/admin") {
           if (req.method === "OPTIONS") return send(res, 200, { ok: true });
           if (req.method === "GET") {
-            // no secrets on GET — public-ish status for admin UI bootstrap
             return send(res, 200, {
               ...wheelPublicStatus(wheel),
-              winners: wheel.winners.map((w) => ({
-                twitter: w.twitter,
-                wallet: w.wallet,
-                prizeName: w.prizeName,
-                at: w.at,
-              })),
+              winners: wheel.winners,
               leaderboard: scores.slice(0, TOP_PUBLIC),
               leaderboardCount: scores.length,
             });
@@ -181,33 +219,8 @@ export function viteGameApiPlugin() {
             return send(res, 401, { error: "bad password" });
           }
 
-          const action = String(data?.action || "");
-          if (action === "reset") {
-            wheel.winners = [];
-            wheel.pending = {};
-          } else if (action === "resetLeaderboard") {
-            scores = [];
-          } else if (action === "removeLeaderboardName") {
-            const name = normalizeTwitterUser(data?.name);
-            if (!name) return send(res, 400, { error: "twitter username required" });
-            scores = scores.filter((row) => normalizeTwitterUser(row.name) !== name);
-          } else if (action === "setLimit") {
-            const limit = Math.floor(Number(data?.limit));
-            if (!Number.isFinite(limit) || limit < 0 || limit > 1000) {
-              return send(res, 400, { error: "invalid limit" });
-            }
-            wheel.limit = limit;
-          } else if (action === "setPrize") {
-            const prizeName = String(data?.prizeName || "").trim().slice(0, 48);
-            if (!prizeName) return send(res, 400, { error: "prize name required" });
-            wheel.prizeName = prizeName;
-          } else if (action === "setPassword") {
-            const next = String(data?.newPassword || "").trim();
-            if (next.length < 6) return send(res, 400, { error: "password too short" });
-            wheel.adminPassword = next;
-          } else {
-            return send(res, 400, { error: "unknown action" });
-          }
+          const result = applyAdminAction(wheel, scores, data);
+          if (result.error) return send(res, result.status, { error: result.error });
 
           return send(res, 200, {
             ok: true,
@@ -215,6 +228,7 @@ export function viteGameApiPlugin() {
             winners: wheel.winners,
             leaderboard: scores.slice(0, TOP_PUBLIC),
             leaderboardCount: scores.length,
+            saved: serializeWheelState(wheel),
           });
         }
 

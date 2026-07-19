@@ -7,7 +7,9 @@ import {
   normalizeWallet,
   createWheelState,
   wheelPublicStatus,
-  WHEEL_ZONK_CHANCE,
+  rollWheelPrize,
+  serializeWheelState,
+  countPrizeClaims,
 } from "./game-shared.js";
 
 const LB_KEY = "climb-v1";
@@ -53,20 +55,55 @@ async function readWheel(env) {
 }
 
 async function writeWheel(env, state) {
-  await env.LEADERBOARD.put(
-    WHEEL_KEY,
-    JSON.stringify({
-      prizeName: state.prizeName,
-      limit: state.limit,
-      winners: state.winners,
-      pending: state.pending,
-      adminPassword: state.adminPassword,
-    })
-  );
+  await env.LEADERBOARD.put(WHEEL_KEY, JSON.stringify(serializeWheelState(state)));
 }
 
 function newClaimToken() {
   return `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function applyAdminAction(wheel, data) {
+  const action = String(data?.action || "");
+  if (action === "reset") {
+    wheel.winners = [];
+    wheel.pending = {};
+    return { ok: true };
+  }
+  if (action === "setPrize") {
+    const prizeName = String(data?.prizeName || "").trim().slice(0, 48);
+    if (!prizeName) return { error: "prize name required", status: 400 };
+    wheel.prizes.free.name = prizeName;
+    return { ok: true };
+  }
+  if (action === "setLimit") {
+    const limit = Math.floor(Number(data?.limit));
+    if (!Number.isFinite(limit) || limit < 0 || limit > 1000) {
+      return { error: "invalid limit", status: 400 };
+    }
+    wheel.prizes.free.limit = limit;
+    return { ok: true };
+  }
+  if (action === "setWhitelistPrize") {
+    const prizeName = String(data?.prizeName || "").trim().slice(0, 48);
+    if (!prizeName) return { error: "whitelist prize name required", status: 400 };
+    wheel.prizes.whitelist.name = prizeName;
+    return { ok: true };
+  }
+  if (action === "setWhitelistLimit") {
+    const limit = Math.floor(Number(data?.limit));
+    if (!Number.isFinite(limit) || limit < 0 || limit > 5000) {
+      return { error: "invalid whitelist limit", status: 400 };
+    }
+    wheel.prizes.whitelist.limit = limit;
+    return { ok: true };
+  }
+  if (action === "setPassword") {
+    const next = String(data?.newPassword || "").trim();
+    if (next.length < 6) return { error: "password too short", status: 400 };
+    wheel.adminPassword = next;
+    return { ok: true };
+  }
+  return { error: "unknown action", status: 400 };
 }
 
 async function handleLeaderboard(request, env) {
@@ -116,23 +153,20 @@ async function handleWheel(request, env, pathname) {
     const twitter = normalizeTwitterUser(body?.twitter);
     if (!twitter) return json({ error: "twitter username required" }, 400);
     const wheel = await readWheel(env);
-    const status = wheelPublicStatus(wheel);
-    if (!status.available) return json({ result: "unavailable", ...status });
-    if (wheel.winners.some((w) => w.twitter === twitter)) {
-      return json({
-        result: "zonk",
-        reason: "already_won",
-        message: `You already claimed ${wheel.prizeName}.`,
-        ...status,
-      });
-    }
-    if (Math.random() < WHEEL_ZONK_CHANCE) return json({ result: "zonk", ...status });
+    const rolled = rollWheelPrize(wheel, twitter);
+    if (rolled.result !== "prize") return json(rolled);
+
     const claimToken = newClaimToken();
-    wheel.pending[claimToken] = { twitter, at: Date.now() };
+    wheel.pending[claimToken] = {
+      twitter,
+      prizeId: rolled.prizeId,
+      at: Date.now(),
+    };
     await writeWheel(env, wheel);
     return json({
       result: "prize",
-      prizeName: wheel.prizeName,
+      prizeId: rolled.prizeId,
+      prizeName: rolled.prizeName,
       claimToken,
       ...wheelPublicStatus(wheel),
     });
@@ -154,26 +188,45 @@ async function handleWheel(request, env, pathname) {
     if (!claimToken || !wheel.pending[claimToken]) {
       return json({ error: "invalid or expired claim" }, 400);
     }
-    if (wheel.pending[claimToken].twitter !== twitter) {
+    const pending = wheel.pending[claimToken];
+    if (pending.twitter !== twitter) {
       return json({ error: "twitter does not match spin" }, 400);
     }
-    if (wheel.winners.some((w) => w.twitter === twitter)) {
+    const prizeId = pending.prizeId || "free";
+    const prize = wheel.prizes[prizeId];
+    if (!prize) {
       delete wheel.pending[claimToken];
       await writeWheel(env, wheel);
-      return json({ error: "already claimed" }, 400);
+      return json({ error: "unknown prize" }, 400);
+    }
+    if (wheel.winners.some((w) => w.twitter === twitter && (w.prizeId || "free") === prizeId)) {
+      delete wheel.pending[claimToken];
+      await writeWheel(env, wheel);
+      return json({ error: "already claimed this prize" }, 400);
     }
     if (wheel.winners.some((w) => normalizeWallet(w.wallet) === wallet)) {
       return json({ error: "this wallet already claimed a prize" }, 400);
     }
-    if (wheel.winners.length >= wheel.limit) {
+    if (countPrizeClaims(wheel, prizeId) >= prize.limit) {
       delete wheel.pending[claimToken];
       await writeWheel(env, wheel);
       return json({ result: "unavailable", ...wheelPublicStatus(wheel) });
     }
     delete wheel.pending[claimToken];
-    wheel.winners.push({ twitter, wallet, prizeName: wheel.prizeName, at: Date.now() });
+    wheel.winners.push({
+      twitter,
+      wallet,
+      prizeId,
+      prizeName: prize.name,
+      at: Date.now(),
+    });
     await writeWheel(env, wheel);
-    return json({ ok: true, prizeName: wheel.prizeName, ...wheelPublicStatus(wheel) });
+    return json({
+      ok: true,
+      prizeId,
+      prizeName: prize.name,
+      ...wheelPublicStatus(wheel),
+    });
   }
 
   if (pathname === "/api/wheel/admin") {
@@ -182,12 +235,7 @@ async function handleWheel(request, env, pathname) {
       const board = await readBoard(env);
       return json({
         ...wheelPublicStatus(wheel),
-        winners: wheel.winners.map((w) => ({
-          twitter: w.twitter,
-          wallet: w.wallet,
-          prizeName: w.prizeName,
-          at: w.at,
-        })),
+        winners: wheel.winners,
         leaderboard: board.slice(0, TOP_PUBLIC),
         leaderboardCount: board.length,
       });
@@ -203,38 +251,27 @@ async function handleWheel(request, env, pathname) {
       if (String(body?.password || "") !== wheel.adminPassword) {
         return json({ error: "bad password" }, 401);
       }
+
       const action = String(body?.action || "");
-      let board = await readBoard(env);
-      if (action === "reset") {
-        wheel.winners = [];
-        wheel.pending = {};
-      } else if (action === "resetLeaderboard") {
-        board = [];
-        await writeBoard(env, board);
+      if (action === "resetLeaderboard") {
+        await writeBoard(env, []);
       } else if (action === "removeLeaderboardName") {
         const name = normalizeTwitterUser(body?.name);
         if (!name) return json({ error: "twitter username required" }, 400);
-        board = board.filter((row) => normalizeTwitterUser(row.name) !== name);
+        const board = (await readBoard(env)).filter(
+          (row) => normalizeTwitterUser(row.name) !== name
+        );
         await writeBoard(env, board);
-      } else if (action === "setLimit") {
-        const limit = Math.floor(Number(body?.limit));
-        if (!Number.isFinite(limit) || limit < 0 || limit > 1000) {
-          return json({ error: "invalid limit" }, 400);
-        }
-        wheel.limit = limit;
-      } else if (action === "setPrize") {
-        const prizeName = String(body?.prizeName || "").trim().slice(0, 48);
-        if (!prizeName) return json({ error: "prize name required" }, 400);
-        wheel.prizeName = prizeName;
-      } else if (action === "setPassword") {
-        const next = String(body?.newPassword || "").trim();
-        if (next.length < 6) return json({ error: "password too short" }, 400);
-        wheel.adminPassword = next;
       } else {
-        return json({ error: "unknown action" }, 400);
+        const result = applyAdminAction(wheel, body);
+        if (result.error) return json({ error: result.error }, result.status);
+        await writeWheel(env, wheel);
       }
-      await writeWheel(env, wheel);
-      board = await readBoard(env);
+
+      // Persist wheel after reset / prize edits
+      if (action === "reset") await writeWheel(env, wheel);
+
+      const board = await readBoard(env);
       return json({
         ok: true,
         ...wheelPublicStatus(wheel),

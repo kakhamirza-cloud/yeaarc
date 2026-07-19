@@ -4,6 +4,8 @@ const els = {
   password: document.getElementById("adminPassword"),
   prizeName: document.getElementById("prizeName"),
   prizeLimit: document.getElementById("prizeLimit"),
+  wlPrizeName: document.getElementById("wlPrizeName"),
+  wlPrizeLimit: document.getElementById("wlPrizeLimit"),
   newPassword: document.getElementById("newPassword"),
   removeName: document.getElementById("removeName"),
   status: document.getElementById("adminStatus"),
@@ -13,6 +15,8 @@ const els = {
   lbList: document.getElementById("lbList"),
   btnSetPrize: document.getElementById("btnSetPrize"),
   btnSetLimit: document.getElementById("btnSetLimit"),
+  btnSetWlPrize: document.getElementById("btnSetWlPrize"),
+  btnSetWlLimit: document.getElementById("btnSetWlLimit"),
   btnReset: document.getElementById("btnReset"),
   btnResetLb: document.getElementById("btnResetLb"),
   btnRemoveName: document.getElementById("btnRemoveName"),
@@ -34,14 +38,37 @@ function renderList(el, rows, emptyLabel, mapRow) {
   });
 }
 
+function prizeById(prizes, id) {
+  return (Array.isArray(prizes) ? prizes : []).find((p) => p.id === id);
+}
+
 async function loadStatus() {
   const res = await fetch("/api/wheel/admin", { cache: "no-store" });
   const data = await res.json();
-  els.status.textContent = data.available
-    ? `${data.prizeName} — ${data.remaining} / ${data.limit} left`
-    : `${data.prizeName} — Spin is unavailable (${data.claimed}/${data.limit})`;
-  els.prizeName.value = data.prizeName || "";
-  els.prizeLimit.value = String(data.limit ?? 3);
+  const free = prizeById(data.prizes, "free");
+  const wl = prizeById(data.prizes, "whitelist");
+
+  const lines = [];
+  if (free) {
+    lines.push(
+      free.available
+        ? `Free: ${free.name} — ${free.remaining}/${free.limit} left`
+        : `Free: ${free.name} — sold out (${free.claimed}/${free.limit})`
+    );
+  }
+  if (wl) {
+    lines.push(
+      wl.available
+        ? `WL: ${wl.name} — ${wl.remaining}/${wl.limit} left`
+        : `WL: ${wl.name} — sold out (${wl.claimed}/${wl.limit})`
+    );
+  }
+  els.status.textContent = lines.join(" · ") || (data.available ? "Spin available" : "Spin unavailable");
+
+  els.prizeName.value = free?.name || "";
+  els.prizeLimit.value = String(free?.limit ?? 3);
+  els.wlPrizeName.value = wl?.name || "";
+  els.wlPrizeLimit.value = String(wl?.limit ?? 50);
   els.lbStatus.textContent = `${data.leaderboardCount ?? 0} score(s) stored`;
 
   renderList(
@@ -49,7 +76,7 @@ async function loadStatus() {
     Array.isArray(data.winners) ? data.winners : [],
     "no winners yet",
     (w, i) =>
-      `<span class="rank">#${i + 1}</span><span>@${w.twitter}<br><small>${w.wallet}</small></span><span class="pts">${w.prizeName || ""}</span>`
+      `<span class="rank">#${i + 1}</span><span>@${w.twitter}<br><small>${w.wallet}</small></span><span class="pts">${w.prizeName || w.prizeId || ""}</span>`
   );
 
   renderList(
@@ -86,6 +113,12 @@ els.btnSetPrize.addEventListener("click", () =>
 );
 els.btnSetLimit.addEventListener("click", () =>
   adminAction("setLimit", { limit: Number(els.prizeLimit.value) })
+);
+els.btnSetWlPrize.addEventListener("click", () =>
+  adminAction("setWhitelistPrize", { prizeName: els.wlPrizeName.value })
+);
+els.btnSetWlLimit.addEventListener("click", () =>
+  adminAction("setWhitelistLimit", { limit: Number(els.wlPrizeLimit.value) })
 );
 els.btnReset.addEventListener("click", () => {
   if (confirm("Reset all wheel winners?")) adminAction("reset");

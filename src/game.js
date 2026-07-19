@@ -615,17 +615,20 @@ function setupWheelPanel() {
 
   els.wheelPanel.classList.remove("hidden");
   els.wheelTitle.textContent = "You found a wheel!";
-  els.wheelCopy.textContent = "Free Mfer Arc or Zonk";
+  els.wheelCopy.textContent = "Free Mfer Arc · Whitelist · Zonk";
   els.wheelCopy.classList.remove("hidden");
   fetch("/api/wheel", { cache: "no-store" })
     .then((r) => r.json())
     .then((data) => {
       if (!data.available) {
         els.wheelTitle.textContent = "Spin is unavailable";
-        els.wheelCopy.textContent = `All ${data.prizeName} prizes have been claimed.`;
+        els.wheelCopy.textContent = "All wheel prizes have been claimed.";
         els.btnSpin.disabled = true;
       } else {
-        els.wheelCopy.textContent = `${data.prizeName} or Zonk`;
+        const bits = (data.prizes || []).map((p) => `${p.name} (${p.remaining} left)`);
+        els.wheelCopy.textContent = bits.length
+          ? `${bits.join(" · ")} · Zonk`
+          : "Free Mfer Arc · Whitelist · Zonk";
       }
     })
     .catch(() => {});
@@ -668,16 +671,21 @@ async function spinWheel() {
   if (data.result === "unavailable") {
     els.wheelTitle.textContent = "Spin is unavailable";
     els.wheelResult.textContent = "No prizes left";
-    els.wheelNote.textContent = `All ${data.prizeName || "prizes"} claimed.`;
+    els.wheelNote.textContent = "All wheel prizes claimed.";
     discardWheelToken();
     els.wheelPanel.classList.remove("hidden");
     els.wheelActions.classList.add("hidden");
     return;
   }
 
-  // Animate wheel: prize segment is ~18–36deg; zonk lands elsewhere
+  // Animate wheel: free ≈ green slice, whitelist mid band, zonk elsewhere
   const isPrize = data.result === "prize";
-  const land = isPrize ? 24 + Math.random() * 8 : 80 + Math.random() * 250;
+  const land =
+    data.prizeId === "free"
+      ? 24 + Math.random() * 8
+      : data.prizeId === "whitelist"
+        ? 50 + Math.random() * 40
+        : 120 + Math.random() * 200;
   wheelRotation += 360 * (5 + Math.floor(Math.random() * 3)) + (360 - land);
   els.prizeWheel.style.transition = "transform 4s cubic-bezier(0.12, 0.75, 0.12, 1)";
   els.prizeWheel.style.transform = `rotate(${wheelRotation}deg)`;

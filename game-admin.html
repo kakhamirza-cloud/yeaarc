@@ -31,7 +31,8 @@
       <h1 class="game-title">game admin</h1>
       <p class="game-sub">
         Manage wheel prizes and the live leaderboard.
-        Default local password: <code>arc-wheel-2026</code>
+        Odds stay fixed: <strong>1% Free Mfer</strong> · <strong>30% Whitelist</strong> · <strong>69% Zonk</strong>.
+        Default password: <code>arc-wheel-2026</code>
       </p>
 
       <form class="score-form" id="adminForm">
@@ -42,18 +43,31 @@
 
         <div class="admin-status" id="adminStatus">Loading…</div>
 
-        <h2 class="lb-title">wheel</h2>
+        <h2 class="lb-title">free mfer arc (1%)</h2>
         <label>
           prize name
           <input id="prizeName" type="text" maxlength="48" placeholder="Free Mfer Arc" />
         </label>
-        <button type="button" class="btn play" id="btnSetPrize">Save prize name</button>
+        <button type="button" class="btn play" id="btnSetPrize">Save free prize name</button>
 
         <label>
-          winner limit
+          free prize limit
           <input id="prizeLimit" type="number" min="0" max="1000" step="1" />
         </label>
-        <button type="button" class="btn play" id="btnSetLimit">Save limit</button>
+        <button type="button" class="btn play" id="btnSetLimit">Save free limit</button>
+
+        <h2 class="lb-title">whitelist spot (30%)</h2>
+        <label>
+          whitelist prize name
+          <input id="wlPrizeName" type="text" maxlength="48" placeholder="Whitelist spot" />
+        </label>
+        <button type="button" class="btn play" id="btnSetWlPrize">Save whitelist name</button>
+
+        <label>
+          whitelist limit
+          <input id="wlPrizeLimit" type="number" min="0" max="5000" step="1" />
+        </label>
+        <button type="button" class="btn play" id="btnSetWlLimit">Save whitelist limit</button>
 
         <button type="button" class="btn primary" id="btnReset">Reset all wheel winners</button>
 
