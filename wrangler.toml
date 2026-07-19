@@ -1,8 +1,17 @@
 name = "yeaarc"
+main = "src/worker.js"
 compatibility_date = "2026-07-18"
 workers_dev = true
 
+# Live leaderboard (create with: npx wrangler kv namespace create LEADERBOARD)
+# Leave empty until you deploy — local Vite uses an in-memory board instead.
+[[kv_namespaces]]
+binding = "LEADERBOARD"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_KV_PREVIEW_ID"
+
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 html_handling = "none"
 not_found_handling = "404-page"

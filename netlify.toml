@@ -20,6 +20,17 @@
   to = "/mint.html"
   status = 200
 
+# Ladder climb mini-game
+[[redirects]]
+  from = "/game"
+  to = "/game.html"
+  status = 200
+
+[[redirects]]
+  from = "/game/"
+  to = "/game.html"
+  status = 200
+
 # Gallery samples
 [[redirects]]
   from = "/gallery/*"

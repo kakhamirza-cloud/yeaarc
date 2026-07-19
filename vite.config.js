@@ -1,10 +1,12 @@
 import { defineConfig } from "vite";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { viteGameApiPlugin } from "./scripts/vite-game-api-plugin.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  plugins: [viteGameApiPlugin()],
   server: {
     port: 5174,
     open: true,
@@ -14,6 +16,8 @@ export default defineConfig({
       input: {
         main: resolve(root, "index.html"),
         mint: resolve(root, "mint.html"),
+        game: resolve(root, "game.html"),
+        "game-admin": resolve(root, "game-admin.html"),
       },
     },
   },

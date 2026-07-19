@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ARC mfers — Ladder Climb</title>
+    <meta name="description" content="Climb the endless ladder. Pick a mfer. Beat the clock." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/game.css" />
+  </head>
+  <body class="game-body">
+    <div class="atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="/">arc<span>_mfers</span></a>
+      <div class="nav-right">
+        <a href="/">home</a>
+        <a href="/mint">mint</a>
+        <a class="play-btn" href="/game" aria-current="page">Play the game</a>
+      </div>
+    </header>
+
+    <main class="game-shell">
+      <!-- Character select -->
+      <section class="game-screen" id="screenSelect">
+        <p class="kicker">mini game</p>
+        <h1 class="game-title">ladder climb</h1>
+        <p class="game-sub">Pick your mfer, then climb as high as you can in 30 seconds.</p>
+        <div class="char-grid" id="charGrid"></div>
+        <button type="button" class="btn primary" id="btnConfirmChar" disabled>Continue</button>
+      </section>
+
+      <!-- Tutorial -->
+      <section class="game-screen hidden" id="screenTutorial">
+        <p class="kicker">how to play</p>
+        <h1 class="game-title">tutorial</h1>
+        <ul class="tutorial-list">
+          <li><strong>← Left</strong> and <strong>Right →</strong> climb the ladder — mash either side as fast as you want.</li>
+          <li>Collect <span class="tag boost">⚡ Speed Boosts</span> for an instant <strong>+2 lines</strong>.</li>
+          <li>Dodge <span class="tag hazard">💥 Obstacles</span> — getting hit stuns you for <strong>2 seconds</strong>.</li>
+          <li>
+            Rare <span class="tag wheel">🎡 Wheel tokens</span> can appear at a random height of <strong>100+</strong> (e.g. 100, 111, 200, 300 — max 1 per run).
+            Grab one and a <strong>spin wheel</strong> shows up after the game — <strong>Free Mfer Arc or Zonk</strong>. Skip it and you lose the chance.
+          </li>
+          <li>Each tap moves you up <strong>one ladder line</strong>.</li>
+          <li>Climb as high as possible before the <strong>⏱ 30s</strong> timer ends.</li>
+        </ul>
+        <div class="control-hint">
+          <p><strong>Desktop:</strong> ← and → arrow keys (any mix is fine)</p>
+          <p><strong>Mobile:</strong> big ← → buttons at the bottom</p>
+        </div>
+        <div class="picked-row">
+          <img id="tutorialPortrait" alt="" width="64" height="64" />
+          <span>ready?</span>
+        </div>
+        <button type="button" class="btn primary" id="btnStart">Start</button>
+        <button type="button" class="btn ghost" id="btnBackSelect">Back</button>
+      </section>
+
+      <!-- Play -->
+      <section class="game-screen play-screen hidden" id="screenPlay">
+        <div class="hud">
+          <div><span>time</span><strong id="hudTime">30.0</strong></div>
+          <div><span>height</span><strong id="hudHeight">0</strong></div>
+          <div><span>status</span><strong id="hudStatus">—</strong></div>
+        </div>
+        <canvas id="gameCanvas" width="400" height="640" aria-label="Ladder climb game"></canvas>
+        <div class="countdown-overlay hidden" id="countdownOverlay">3</div>
+        <div class="stun-overlay hidden" id="stunOverlay" aria-live="polite">
+          <span class="stun-emoji">💥</span>
+          <strong id="stunTimer">2.0</strong>
+          <span class="stun-label">stunned</span>
+        </div>
+        <div class="touch-controls" id="touchControls" aria-hidden="true">
+          <button type="button" id="btnLeft" aria-label="Left">←</button>
+          <button type="button" id="btnRight" aria-label="Right">→</button>
+        </div>
+      </section>
+
+      <!-- Results -->
+      <section class="game-screen hidden" id="screenResults">
+        <p class="kicker">run over</p>
+        <h1 class="game-title">score</h1>
+        <p class="final-score"><strong id="finalScore">0</strong> <span>height</span></p>
+
+        <div class="wheel-panel hidden" id="wheelPanel">
+          <p class="kicker">🎡 wheel token</p>
+          <h2 class="wheel-title" id="wheelTitle">You found a wheel!</h2>
+          <p class="wheel-copy" id="wheelCopy">Free Mfer Arc or Zonk</p>
+          <div class="wheel-stage">
+            <div class="wheel-pointer" aria-hidden="true"></div>
+            <div class="prize-wheel" id="prizeWheel" aria-hidden="true"></div>
+          </div>
+          <p class="wheel-result" id="wheelResult"></p>
+          <div class="wheel-actions" id="wheelActions">
+            <button type="button" class="btn primary" id="btnSpin">Spin the wheel</button>
+            <button type="button" class="btn ghost" id="btnSkipWheel">Skip (lose token)</button>
+          </div>
+          <form class="score-form hidden" id="claimForm">
+            <label>
+              wallet address
+              <input id="claimWallet" type="text" maxlength="42" placeholder="0x…" autocomplete="off" required />
+            </label>
+            <button type="submit" class="btn primary">Claim prize</button>
+          </form>
+          <p class="game-note" id="wheelNote"></p>
+        </div>
+
+        <p class="lb-rule">
+          To make your leaderboard entry valid, <strong>post your score on X and tag @arc_mfers</strong>.
+          We use your Twitter username on the board.
+        </p>
+
+        <form class="score-form" id="scoreForm">
+          <label>
+            twitter username
+            <input
+              id="playerName"
+              type="text"
+              maxlength="15"
+              placeholder="@yourhandle"
+              autocomplete="username"
+              required
+            />
+          </label>
+          <div class="score-actions">
+            <button type="button" class="btn play" id="btnTweet">Post score on X</button>
+            <button type="submit" class="btn primary">Submit to leaderboard</button>
+          </div>
+        </form>
+        <p class="game-note" id="submitNote"></p>
+        <h2 class="lb-title">top 10 leaderboard</h2>
+        <p class="lb-live-hint">Live top 10 — updates when someone climbs past you.</p>
+        <ol class="leaderboard" id="leaderboard"></ol>
+        <div class="result-actions">
+          <button type="button" class="btn primary" id="btnReplay">Play again</button>
+          <a class="btn ghost" href="/">Home</a>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/game.js"></script>
+  </body>
+</html>

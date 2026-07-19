@@ -135,6 +135,28 @@ main,
   color: var(--accent-ink);
 }
 
+/* Nav CTA so the game isn’t a tiny text link */
+.play-btn {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: none;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.play-btn:hover,
+.nav-right a.play-btn:hover {
+  background: #6ec8ff;
+  border-color: #6ec8ff;
+  color: var(--accent-ink);
+}
+
 /* —— Hero: full-bleed collage, brand over art —— */
 .hero {
   position: relative;
@@ -293,6 +315,45 @@ main,
 .btn.notify:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.btn.play {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn.play:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.game-cta {
+  border-bottom: 1px solid var(--line);
+  padding: clamp(2.5rem, 6vw, 4rem) clamp(1rem, 4vw, 2.5rem);
+  background:
+    linear-gradient(135deg, rgba(74, 168, 255, 0.12) 0%, transparent 55%),
+    var(--bg);
+}
+
+.game-cta-copy {
+  max-width: 36rem;
+}
+
+.game-cta h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+
+.game-cta p {
+  margin: 0.85rem 0 1.35rem;
+  color: var(--muted);
+  max-width: 34ch;
+  line-height: 1.55;
 }
 
 @keyframes rise {
@@ -688,8 +749,13 @@ main,
 }
 
 @media (max-width: 640px) {
-  .nav-right a:not(.wallet-btn) {
+  .nav-right a:not(.wallet-btn):not(.play-btn) {
     display: none;
+  }
+
+  .play-btn {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.72rem;
   }
 
   .hero-collage {

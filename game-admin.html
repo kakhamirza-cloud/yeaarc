@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC mfers — Wheel admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/game.css" />
+  </head>
+  <body class="game-body">
+    <div class="atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="/">arc<span>_mfers</span></a>
+      <div class="nav-right">
+        <a class="play-btn" href="/game">Play the game</a>
+      </div>
+    </header>
+
+    <main class="game-shell admin-shell">
+      <p class="kicker">secret admin</p>
+      <h1 class="game-title">game admin</h1>
+      <p class="game-sub">
+        Manage wheel prizes and the live leaderboard.
+        Default local password: <code>arc-wheel-2026</code>
+      </p>
+
+      <form class="score-form" id="adminForm">
+        <label>
+          admin password
+          <input id="adminPassword" type="password" autocomplete="current-password" required />
+        </label>
+
+        <div class="admin-status" id="adminStatus">Loading…</div>
+
+        <h2 class="lb-title">wheel</h2>
+        <label>
+          prize name
+          <input id="prizeName" type="text" maxlength="48" placeholder="Free Mfer Arc" />
+        </label>
+        <button type="button" class="btn play" id="btnSetPrize">Save prize name</button>
+
+        <label>
+          winner limit
+          <input id="prizeLimit" type="number" min="0" max="1000" step="1" />
+        </label>
+        <button type="button" class="btn play" id="btnSetLimit">Save limit</button>
+
+        <button type="button" class="btn primary" id="btnReset">Reset all wheel winners</button>
+
+        <h2 class="lb-title">leaderboard</h2>
+        <div class="admin-status" id="lbStatus">—</div>
+        <label>
+          remove twitter username
+          <input id="removeName" type="text" maxlength="15" placeholder="@yourhandle" />
+        </label>
+        <button type="button" class="btn play" id="btnRemoveName">Remove that name</button>
+        <button type="button" class="btn primary" id="btnResetLb">Reset full leaderboard</button>
+
+        <label>
+          new admin password
+          <input id="newPassword" type="password" autocomplete="new-password" placeholder="optional" />
+        </label>
+        <button type="button" class="btn ghost" id="btnSetPassword">Change password</button>
+      </form>
+
+      <p class="game-note" id="adminNote"></p>
+
+      <h2 class="lb-title">wheel winners</h2>
+      <ol class="leaderboard" id="winnersList"></ol>
+
+      <h2 class="lb-title">top scores</h2>
+      <ol class="leaderboard" id="lbList"></ol>
+    </main>
+
+    <script type="module" src="/src/game-admin.js"></script>
+  </body>
+</html>
