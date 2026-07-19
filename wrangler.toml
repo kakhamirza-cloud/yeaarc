@@ -1,7 +1,8 @@
-# Must match your Cloudflare Workers/Pages project name (repo: yeaarc)
 name = "yeaarc"
 compatibility_date = "2026-07-18"
+workers_dev = true
 
 [assets]
 directory = "./dist"
+html_handling = "none"
 not_found_handling = "404-page"
