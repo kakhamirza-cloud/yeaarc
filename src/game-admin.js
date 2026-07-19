@@ -11,7 +11,8 @@ const els = {
   status: document.getElementById("adminStatus"),
   lbStatus: document.getElementById("lbStatus"),
   note: document.getElementById("adminNote"),
-  winners: document.getElementById("winnersList"),
+  freeWinners: document.getElementById("freeWinnersList"),
+  wlWinners: document.getElementById("wlWinnersList"),
   lbList: document.getElementById("lbList"),
   btnSetPrize: document.getElementById("btnSetPrize"),
   btnSetLimit: document.getElementById("btnSetLimit"),
@@ -71,12 +72,24 @@ async function loadStatus() {
   els.wlPrizeLimit.value = String(wl?.limit ?? 50);
   els.lbStatus.textContent = `${data.leaderboardCount ?? 0} score(s) stored`;
 
+  const allWinners = Array.isArray(data.winners) ? data.winners : [];
+  const freeWins = allWinners.filter((w) => (w.prizeId || "free") === "free");
+  const wlWins = allWinners.filter((w) => w.prizeId === "whitelist");
+
   renderList(
-    els.winners,
-    Array.isArray(data.winners) ? data.winners : [],
-    "no winners yet",
+    els.freeWinners,
+    freeWins,
+    "no free mfer winners yet",
     (w, i) =>
-      `<span class="rank">#${i + 1}</span><span>@${w.twitter}<br><small>${w.wallet}</small></span><span class="pts">${w.prizeName || w.prizeId || ""}</span>`
+      `<span class="rank">#${i + 1}</span><span>@${w.twitter}<br><small>${w.wallet}</small></span><span class="pts">${w.prizeName || "Free"}</span>`
+  );
+
+  renderList(
+    els.wlWinners,
+    wlWins,
+    "no whitelist wallets yet",
+    (w, i) =>
+      `<span class="rank">#${i + 1}</span><span>@${w.twitter}<br><small>${w.wallet}</small></span><span class="pts">WL</span>`
   );
 
   renderList(

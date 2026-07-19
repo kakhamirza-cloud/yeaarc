@@ -56,6 +56,8 @@ const els = {
   btnSkipWheel: document.getElementById("btnSkipWheel"),
   claimForm: document.getElementById("claimForm"),
   claimWallet: document.getElementById("claimWallet"),
+  claimWalletLabel: document.getElementById("claimWalletLabel"),
+  btnClaimPrize: document.getElementById("btnClaimPrize"),
   wheelNote: document.getElementById("wheelNote"),
 };
 
@@ -697,7 +699,16 @@ async function spinWheel() {
   if (isPrize) {
     claimToken = data.claimToken;
     els.wheelResult.textContent = `🎉 ${data.prizeName}!`;
-    els.wheelNote.textContent = "Enter your wallet to claim. Same Twitter can’t win twice.";
+    const isWl = data.prizeId === "whitelist";
+    els.wheelNote.textContent = isWl
+      ? "Submit your wallet to claim the whitelist spot — it shows up in game admin."
+      : "Submit your wallet to claim. Same wallet can’t be reused.";
+    if (els.claimWalletLabel) {
+      els.claimWalletLabel.textContent = isWl ? "wallet for whitelist" : "wallet address";
+    }
+    if (els.btnClaimPrize) {
+      els.btnClaimPrize.textContent = isWl ? "Submit wallet" : "Claim prize";
+    }
     els.wheelActions.classList.add("hidden");
     els.claimForm.classList.remove("hidden");
   } else {
