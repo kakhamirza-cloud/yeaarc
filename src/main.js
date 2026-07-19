@@ -20,7 +20,8 @@ const els = {
 let artIds = [...FALLBACK_IDS];
 
 function artUrl(id) {
-  return `/art/${id}.png`;
+  // v=2 busts Netlify/browser cache after swapping remapped OG art for generative Arc mfers
+  return `/art/${id}.png?v=2`;
 }
 
 function pick(ids, n) {
