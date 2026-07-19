@@ -27,10 +27,11 @@ if (!source) {
     console.log(`Using existing ${DEST}`);
     process.exit(0);
   }
-  console.error(
-    "No art source found. Put PNGs in ../ARC Mfers/output/mfers or ./art-source, then re-run."
+  // Site uses /gallery samples in git — skip full art sync on Netlify/CI
+  console.log(
+    "No art source found; skipping sync (gallery samples are enough for deploy)."
   );
-  process.exit(1);
+  process.exit(0);
 }
 
 mkdirSync(DEST, { recursive: true });
