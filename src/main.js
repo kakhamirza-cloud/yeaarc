@@ -1,6 +1,7 @@
 import { CONFIG, formatPrice } from "./config.js";
 
-const FALLBACK_IDS = [
+/** Only these PNGs ship with the site (full 5k stays offline for mint/IPFS). */
+const GALLERY_IDS = [
   0, 1, 2, 3, 7, 10, 12, 21, 42, 55, 56, 69, 100, 111, 222, 301, 333, 420, 690,
   1000, 1337, 2000, 2500, 3000, 3333, 4000, 4200, 4500, 4999,
 ];
@@ -17,11 +18,9 @@ const els = {
   priceStat: document.getElementById("priceStat"),
 };
 
-let artIds = [...FALLBACK_IDS];
-
 function artUrl(id) {
-  // v=3 after trimming site art to gallery samples only
-  return `/art/${id}.png?v=3`;
+  // New path avoids poisoned /art/* CDN cache (was immutable for 1 year)
+  return `/gallery/${id}.png`;
 }
 
 function pick(ids, n) {
@@ -30,7 +29,7 @@ function pick(ids, n) {
     const j = Math.floor(Math.random() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return copy.slice(0, n);
+  return copy.slice(0, Math.min(n, copy.length));
 }
 
 function makeTile(id, { interactive = true } = {}) {
@@ -41,7 +40,7 @@ function makeTile(id, { interactive = true } = {}) {
 
   const img = document.createElement("img");
   img.src = artUrl(id);
-  img.alt = `mfer #${id}`;
+  img.alt = `ARC mfer #${id}`;
   img.loading = "lazy";
   img.width = 200;
   img.height = 200;
@@ -73,22 +72,11 @@ function renderCollection(ids) {
   ids.forEach((id) => els.collectionGrid.appendChild(makeTile(id)));
 }
 
-async function loadArtIds() {
-  try {
-    const res = await fetch("/art/ids.json?v=3");
-    if (!res.ok) throw new Error("ids fetch failed");
-    const data = await res.json();
-    if (Array.isArray(data.ids) && data.ids.length) {
-      artIds = data.ids;
-    }
-  } catch {
-    /* fallback ids already set */
-  }
-
-  const collageIds = pick(artIds, 18);
+function bootGallery() {
+  const collageIds = pick(GALLERY_IDS, 18);
   setPreview(collageIds[0] ?? 69);
   renderCollage(collageIds);
-  renderCollection(pick(artIds, 36));
+  renderCollection(pick(GALLERY_IDS, 24));
 }
 
 els.priceStat.textContent = formatPrice(CONFIG.mintPrice);
@@ -97,4 +85,4 @@ els.supplyStat.textContent = CONFIG.maxSupply.toLocaleString();
 els.mintedLabel.textContent = `— / ${CONFIG.maxSupply.toLocaleString()}`;
 els.progressBar.style.width = "0%";
 
-loadArtIds();
+bootGallery();

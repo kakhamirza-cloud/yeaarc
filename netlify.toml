@@ -20,6 +20,12 @@
   to = "/mint.html"
   status = 200
 
+# Gallery samples
+[[redirects]]
+  from = "/gallery/*"
+  to = "/gallery/:splat"
+  status = 200
+
 # Art and other static files should not fall through to index
 [[redirects]]
   from = "/art/*"
@@ -33,6 +39,11 @@
   status = 200
 
 [[headers]]
+  for = "/gallery/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
   for = "/art/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=60"
