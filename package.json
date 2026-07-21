@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "sync:art": "node scripts/sync-art.mjs",
-    "predev": "node scripts/sync-art.mjs",
+    "whitelist:parse": "node scripts/parse-whitelist.mjs",
+    "predev": "node scripts/parse-whitelist.mjs && node scripts/sync-art.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/sync-art.mjs",
+    "prebuild": "node scripts/parse-whitelist.mjs && node scripts/sync-art.mjs",
     "build": "vite build",
     "build:cf": "node scripts/build-cf.mjs",
     "preview": "vite preview",

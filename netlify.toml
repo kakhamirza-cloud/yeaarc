@@ -31,6 +31,26 @@
   to = "/game.html"
   status = 200
 
+[[redirects]]
+  from = "/checker"
+  to = "/checker.html"
+  status = 200
+
+[[redirects]]
+  from = "/checker/"
+  to = "/checker.html"
+  status = 200
+
+[[redirects]]
+  from = "/prediction"
+  to = "/prediction.html"
+  status = 200
+
+[[redirects]]
+  from = "/prediction/"
+  to = "/prediction.html"
+  status = 200
+
 # Gallery samples
 [[redirects]]
   from = "/gallery/*"

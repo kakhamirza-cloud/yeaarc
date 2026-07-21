@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC mfers — wallet checker</title>
+    <meta
+      name="description"
+      content="Check if your wallet is whitelisted for ARC mfers mint."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="/">arc<span>_mfers</span></a>
+      <div class="nav-right">
+        <a href="/">home</a>
+        <a href="/mint">mint</a>
+        <a href="/prediction">prediction</a>
+        <a class="play-btn" href="/game">Play the game</a>
+        <a class="wallet-btn" href="/mint">connect</a>
+      </div>
+    </header>
+
+    <main class="checker-page">
+      <p class="kicker">mint phase</p>
+      <h1 class="checker-title">wallet checker</h1>
+      <p class="checker-copy">Enter your wallet to see which phase you&apos;re in.</p>
+
+      <form class="checker-card" id="checkerForm">
+        <label class="checker-label" for="walletInput">wallet address</label>
+        <input
+          id="walletInput"
+          class="checker-input"
+          type="text"
+          inputmode="text"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="0x…"
+          required
+        />
+        <button type="submit" class="btn primary checker-submit" id="btnCheck">
+          Check wallet
+        </button>
+      </form>
+
+      <div class="checker-result hidden" id="checkerResult" role="status" aria-live="polite"></div>
+
+      <p class="checker-note">
+        <a href="/">← Back to home</a>
+      </p>
+    </main>
+
+    <footer class="footer">
+      <img src="/gallery/420.png" alt="" width="28" height="28" />
+      <span>ARC mfers · Arc Chain</span>
+    </footer>
+
+    <script type="module" src="/src/checker.js"></script>
+  </body>
+</html>

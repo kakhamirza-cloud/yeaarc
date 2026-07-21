@@ -5,3 +5,7 @@
 /game/ /game.html 200
 /game-admin /game-admin.html 200
 /game-admin/ /game-admin.html 200
+/checker /checker.html 200
+/checker/ /checker.html 200
+/prediction /prediction.html 200
+/prediction/ /prediction.html 200

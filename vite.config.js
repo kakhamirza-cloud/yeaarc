@@ -18,6 +18,8 @@ export default defineConfig({
         mint: resolve(root, "mint.html"),
         game: resolve(root, "game.html"),
         "game-admin": resolve(root, "game-admin.html"),
+        checker: resolve(root, "checker.html"),
+        prediction: resolve(root, "prediction.html"),
       },
     },
   },

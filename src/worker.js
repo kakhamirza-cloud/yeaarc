@@ -11,6 +11,7 @@ import {
   serializeWheelState,
   countPrizeClaims,
 } from "./game-shared.js";
+import { isMintWhitelisted } from "./mint-whitelist.js";
 
 const LB_KEY = "climb-v1";
 const WHEEL_KEY = "wheel-v1";
@@ -104,6 +105,23 @@ function applyAdminAction(wheel, data) {
     return { ok: true };
   }
   return { error: "unknown action", status: 400 };
+}
+
+async function handleChecker(request) {
+  if (request.method === "OPTIONS") return json({ ok: true });
+  if (request.method !== "POST") return json({ error: "method not allowed" }, 405);
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad json" }, 400);
+  }
+
+  const wallet = normalizeWallet(body?.wallet);
+  if (!wallet) return json({ error: "valid wallet address required (0x…)" }, 400);
+
+  return json({ whitelisted: isMintWhitelisted(wallet) });
 }
 
 async function handleLeaderboard(request, env) {
@@ -289,6 +307,8 @@ function rewriteAssetPath(pathname) {
   if (pathname === "/mint" || pathname === "/mint/") return "/mint.html";
   if (pathname === "/game" || pathname === "/game/") return "/game.html";
   if (pathname === "/game-admin" || pathname === "/game-admin/") return "/game-admin.html";
+  if (pathname === "/checker" || pathname === "/checker/") return "/checker.html";
+  if (pathname === "/prediction" || pathname === "/prediction/") return "/prediction.html";
   if (pathname === "/" || pathname === "") return "/index.html";
   return null;
 }
@@ -298,6 +318,7 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
 
+    if (pathname === "/api/checker") return handleChecker(request);
     if (pathname === "/api/leaderboard") return handleLeaderboard(request, env);
     if (pathname.startsWith("/api/wheel")) return handleWheel(request, env, pathname);
 

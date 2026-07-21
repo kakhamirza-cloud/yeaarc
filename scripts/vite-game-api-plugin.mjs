@@ -12,6 +12,7 @@ import {
   serializeWheelState,
   countPrizeClaims,
 } from "../src/game-shared.js";
+import { isMintWhitelisted } from "../src/mint-whitelist.js";
 
 const TOP_PUBLIC = 10;
 
@@ -93,6 +94,16 @@ export function viteGameApiPlugin() {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split("?")[0] || "";
+
+        if (url === "/api/checker") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          return send(res, 200, { whitelisted: isMintWhitelisted(wallet) });
+        }
 
         if (url === "/api/leaderboard") {
           if (req.method === "OPTIONS") return send(res, 200, { ok: true });
