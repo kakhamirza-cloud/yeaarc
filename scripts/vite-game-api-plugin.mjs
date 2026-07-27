@@ -88,12 +88,62 @@ export function viteGameApiPlugin() {
   /** @type {Array<{ name: string, score: number, at: number, mfer: number|null }>} */
   let scores = [];
   let wheel = createWheelState();
+  /** @type {Array<{ wallet: string, twitter: string|null, followed: boolean, retweetedLiked: boolean, at: number }>} */
+  let wlApplies = [];
 
   return {
     name: "arc-mfers-game-api",
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split("?")[0] || "";
+
+        if (url === "/api/wl-apply") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          if (!data?.followed || !data?.retweetedLiked) {
+            return send(res, 400, { error: "confirm follow + retweet & like first" });
+          }
+          const twitter = normalizeTwitterUser(data?.twitter) || null;
+          const entry = {
+            wallet,
+            twitter,
+            followed: true,
+            retweetedLiked: true,
+            at: Date.now(),
+          };
+          const idx = wlApplies.findIndex((row) => normalizeWallet(row.wallet) === wallet);
+          let updated = false;
+          if (idx >= 0) {
+            wlApplies[idx] = entry;
+            updated = true;
+          } else {
+            wlApplies.unshift(entry);
+          }
+          return send(res, 200, { ok: true, updated });
+        }
+
+        if (url === "/api/wl-apply/admin") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          if (String(data?.password || "") !== wheel.adminPassword) {
+            return send(res, 401, { error: "bad password" });
+          }
+          if (String(data?.action || "list") === "clear") {
+            wlApplies = [];
+            return send(res, 200, { ok: true, applications: [] });
+          }
+          return send(res, 200, {
+            ok: true,
+            applications: wlApplies,
+            count: wlApplies.length,
+          });
+        }
 
         if (url === "/api/checker") {
           if (req.method === "OPTIONS") return send(res, 200, { ok: true });

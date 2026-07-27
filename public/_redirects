@@ -9,3 +9,7 @@
 /checker/ /checker.html 200
 /prediction /prediction.html 200
 /prediction/ /prediction.html 200
+/apply /apply.html 200
+/apply/ /apply.html 200
+/apply-admin /apply-admin.html 200
+/apply-admin/ /apply-admin.html 200

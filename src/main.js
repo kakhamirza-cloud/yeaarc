@@ -1,13 +1,12 @@
 import { CONFIG, formatPrice } from "./config.js";
 
-/** Only these PNGs ship with the site (full 5k stays offline for mint/IPFS). */
 const GALLERY_IDS = [
   0, 1, 2, 3, 7, 10, 12, 21, 42, 55, 56, 69, 100, 111, 222, 301, 333, 420, 690,
   1000, 1337, 2000, 2500, 3000, 3333, 4000, 4200, 4500, 4999,
 ];
 
 const els = {
-  heroCollage: document.getElementById("heroCollage"),
+  heroFeature: document.getElementById("heroFeature"),
   collectionGrid: document.getElementById("collectionGrid"),
   mintPreview: document.getElementById("mintPreview"),
   navMark: document.getElementById("navMark"),
@@ -16,10 +15,11 @@ const els = {
   progressBar: document.getElementById("progressBar"),
   supplyStat: document.getElementById("supplyStat"),
   priceStat: document.getElementById("priceStat"),
+  menuBtn: document.getElementById("menuBtn"),
+  topnav: document.getElementById("topnav"),
 };
 
 function artUrl(id) {
-  // New path avoids poisoned /art/* CDN cache (was immutable for 1 year)
   return `/gallery/${id}.png`;
 }
 
@@ -32,80 +32,81 @@ function pick(ids, n) {
   return copy.slice(0, Math.min(n, copy.length));
 }
 
-function makeTile(id, { interactive = true } = {}) {
-  const tile = document.createElement(interactive ? "button" : "div");
-  if (interactive) tile.type = "button";
+function makeTile(id) {
+  const tile = document.createElement("button");
+  tile.type = "button";
   tile.className = "tile";
+  tile.dataset.id = String(id);
   tile.setAttribute("aria-label", `ARC mfer #${id}`);
-
   const img = document.createElement("img");
   img.src = artUrl(id);
   img.alt = `ARC mfer #${id}`;
   img.loading = "lazy";
-  img.width = 200;
-  img.height = 200;
+  img.width = 280;
+  img.height = 280;
   tile.appendChild(img);
-
-  if (interactive) {
-    tile.addEventListener("click", () => setPreview(id));
-  }
-
+  tile.addEventListener("click", () => setPreview(id));
   return tile;
 }
 
-function setPreview(id) {
-  els.mintPreview.src = artUrl(id);
-  if (els.navMark) els.navMark.src = artUrl(id);
-}
-
-function renderCollage(ids) {
-  els.heroCollage.innerHTML = "";
-  ids.slice(0, 18).forEach((id, i) => {
-    const tile = makeTile(id, { interactive: false });
-    tile.style.animationDelay = `${i * 40}ms`;
-    els.heroCollage.appendChild(tile);
+function markActive(id) {
+  if (!els.collectionGrid) return;
+  els.collectionGrid.querySelectorAll(".tile").forEach((tile) => {
+    tile.classList.toggle("is-on", tile.dataset.id === String(id));
   });
 }
 
-function renderCollection(ids) {
-  els.collectionGrid.innerHTML = "";
-  ids.forEach((id) => els.collectionGrid.appendChild(makeTile(id)));
+function setPreview(id) {
+  const url = artUrl(id);
+  if (els.mintPreview) els.mintPreview.src = url;
+  if (els.heroFeature) els.heroFeature.src = url;
+  if (els.navMark) els.navMark.src = url;
+  markActive(id);
 }
 
-function bootGallery() {
-  const collageIds = pick(GALLERY_IDS, 18);
-  setPreview(collageIds[0] ?? 69);
-  renderCollage(collageIds);
-  renderCollection(pick(GALLERY_IDS, 24));
+function boot() {
+  const narrow = window.matchMedia("(max-width: 760px)").matches;
+  const ids = pick(GALLERY_IDS, narrow ? 14 : 24);
+  setPreview(ids[0] ?? 420);
+
+  if (els.collectionGrid) {
+    els.collectionGrid.innerHTML = "";
+    ids.forEach((id) => els.collectionGrid.appendChild(makeTile(id)));
+    markActive(ids[0] ?? 420);
+  }
+
+  if (els.priceStat) els.priceStat.textContent = formatPrice(CONFIG.mintPrice);
+  if (els.mintPriceLabel) els.mintPriceLabel.textContent = formatPrice(CONFIG.mintPrice);
+  if (els.supplyStat) els.supplyStat.textContent = CONFIG.maxSupply.toLocaleString();
+  if (els.mintedLabel) els.mintedLabel.textContent = `— / ${CONFIG.maxSupply.toLocaleString()}`;
+  if (els.progressBar) els.progressBar.style.width = "0%";
+
+  if (els.menuBtn && els.topnav) {
+    els.menuBtn.addEventListener("click", () => {
+      const open = els.topnav.classList.toggle("open");
+      els.menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    els.topnav.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", () => {
+        els.topnav.classList.remove("open");
+        els.menuBtn.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
 }
 
-els.priceStat.textContent = formatPrice(CONFIG.mintPrice);
-els.mintPriceLabel.textContent = formatPrice(CONFIG.mintPrice);
-els.supplyStat.textContent = CONFIG.maxSupply.toLocaleString();
-els.mintedLabel.textContent = `— / ${CONFIG.maxSupply.toLocaleString()}`;
-els.progressBar.style.width = "0%";
-
-bootGallery();
+boot();
 
 async function loadLadderKing() {
   const line = document.getElementById("ladderKingLine");
-  const cta = document.getElementById("ladderKingCta");
   if (!line) return;
   try {
     const res = await fetch("/api/leaderboard", { cache: "no-store" });
-    if (!res.ok) throw new Error("lb");
     const data = await res.json();
     const top = Array.isArray(data.scores) ? data.scores[0] : null;
-    if (!top) {
-      line.textContent = "No climbs yet — be the first #1.";
-      if (cta) cta.textContent = "Play the game";
-      return;
-    }
-    line.textContent = `#1 @${top.name} — ${top.score} height`;
-    if (cta) cta.textContent = `Play to dethrone @${top.name}`;
+    line.textContent = top ? `Last #1 @${top.name} — ${top.score}` : "Season closed.";
   } catch {
-    line.textContent = "Climb the ladder. Board resets every Sunday.";
-    if (cta) cta.textContent = "Play the game";
+    line.textContent = "Season closed.";
   }
 }
 

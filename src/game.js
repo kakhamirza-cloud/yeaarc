@@ -9,6 +9,9 @@ import {
   tweetIntentUrl,
 } from "./game-shared.js";
 
+/** Flip to false when you want Ladder Climb open again. */
+const GAME_CLOSED = true;
+
 const CHAR_IDS = [0, 1, 2, 3, 7, 12, 21, 42, 55, 69, 100, 420];
 const ROUND_SECONDS = 30;
 const RUNG_GAP = 46;
@@ -854,11 +857,20 @@ els.scoreForm.addEventListener("submit", async (e) => {
   }
 });
 
-fitCanvas();
-renderCharSelect();
-bindControls();
-fetchLeaderboard().then(() => renderLeaderboard());
-show(els.select);
+if (GAME_CLOSED) {
+  // Keep closed screen only — no select / play / score submit.
+  for (const key of ["select", "tutorial", "play", "results"]) {
+    els[key]?.classList.add("hidden");
+  }
+  document.getElementById("screenClosed")?.classList.remove("hidden");
+} else {
+  document.getElementById("screenClosed")?.classList.add("hidden");
+  fitCanvas();
+  renderCharSelect();
+  bindControls();
+  fetchLeaderboard().then(() => renderLeaderboard());
+  show(els.select);
+}
 
 function fitCanvas() {
   els.canvas.width = 400;

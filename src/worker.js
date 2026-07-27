@@ -15,8 +15,10 @@ import { isMintWhitelisted } from "./mint-whitelist.js";
 
 const LB_KEY = "climb-v1";
 const WHEEL_KEY = "wheel-v1";
+const WL_APPLY_KEY = "wl-apply-v1";
 const MAX_STORE = 50;
 const TOP_PUBLIC = 10;
+const MAX_WL_APPLIES = 5000;
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -57,6 +59,20 @@ async function readWheel(env) {
 
 async function writeWheel(env, state) {
   await env.LEADERBOARD.put(WHEEL_KEY, JSON.stringify(serializeWheelState(state)));
+}
+
+async function readWlApplies(env) {
+  if (!env.LEADERBOARD) return [];
+  try {
+    const raw = await env.LEADERBOARD.get(WL_APPLY_KEY, "json");
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeWlApplies(env, list) {
+  await env.LEADERBOARD.put(WL_APPLY_KEY, JSON.stringify(list.slice(0, MAX_WL_APPLIES)));
 }
 
 function newClaimToken() {
@@ -122,6 +138,75 @@ async function handleChecker(request) {
   if (!wallet) return json({ error: "valid wallet address required (0x…)" }, 400);
 
   return json({ whitelisted: isMintWhitelisted(wallet) });
+}
+
+async function handleWlApply(request, env) {
+  if (request.method === "OPTIONS") return json({ ok: true });
+
+  const url = new URL(request.url);
+  const { pathname } = url;
+
+  if (pathname === "/api/wl-apply" && request.method === "POST") {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "bad json" }, 400);
+    }
+
+    const wallet = normalizeWallet(body?.wallet);
+    if (!wallet) return json({ error: "valid wallet address required (0x…)" }, 400);
+    if (!body?.followed || !body?.retweetedLiked) {
+      return json({ error: "confirm follow + retweet & like first" }, 400);
+    }
+
+    const twitter = normalizeTwitterUser(body?.twitter) || null;
+    const list = await readWlApplies(env);
+    const idx = list.findIndex((row) => normalizeWallet(row.wallet) === wallet);
+    const entry = {
+      wallet,
+      twitter,
+      followed: true,
+      retweetedLiked: true,
+      at: Date.now(),
+    };
+
+    let updated = false;
+    if (idx >= 0) {
+      list[idx] = entry;
+      updated = true;
+    } else {
+      list.unshift(entry);
+    }
+
+    await writeWlApplies(env, list);
+    return json({ ok: true, updated });
+  }
+
+  if (pathname === "/api/wl-apply/admin" && request.method === "POST") {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return json({ error: "bad json" }, 400);
+    }
+
+    const wheel = await readWheel(env);
+    if (String(body?.password || "") !== wheel.adminPassword) {
+      return json({ error: "bad password" }, 401);
+    }
+
+    const action = String(body?.action || "list");
+    if (action === "clear") {
+      await writeWlApplies(env, []);
+      return json({ ok: true, applications: [] });
+    }
+
+    const applications = await readWlApplies(env);
+    return json({ ok: true, applications, count: applications.length });
+  }
+
+  return json({ error: "method not allowed" }, 405);
 }
 
 async function handleLeaderboard(request, env) {
@@ -309,6 +394,8 @@ function rewriteAssetPath(pathname) {
   if (pathname === "/game-admin" || pathname === "/game-admin/") return "/game-admin.html";
   if (pathname === "/checker" || pathname === "/checker/") return "/checker.html";
   if (pathname === "/prediction" || pathname === "/prediction/") return "/prediction.html";
+  if (pathname === "/apply" || pathname === "/apply/") return "/apply.html";
+  if (pathname === "/apply-admin" || pathname === "/apply-admin/") return "/apply-admin.html";
   if (pathname === "/" || pathname === "") return "/index.html";
   return null;
 }
@@ -319,6 +406,7 @@ export default {
     const { pathname } = url;
 
     if (pathname === "/api/checker") return handleChecker(request);
+    if (pathname.startsWith("/api/wl-apply")) return handleWlApply(request, env);
     if (pathname === "/api/leaderboard") return handleLeaderboard(request, env);
     if (pathname.startsWith("/api/wheel")) return handleWheel(request, env, pathname);
 

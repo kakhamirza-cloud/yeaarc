@@ -19,6 +19,36 @@
   display: none;
 }
 
+.closed-screen {
+  padding: 1.5rem 0 2rem;
+  text-align: left;
+}
+
+.closed-copy {
+  max-width: 36ch;
+}
+
+.closed-note {
+  margin: 0 0 1.5rem;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.closed-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 18rem;
+}
+
+.closed-actions .btn {
+  width: 100%;
+  min-height: 2.875rem;
+  text-decoration: none;
+  text-align: center;
+}
+
 .select-layout {
   display: grid;
   gap: 1.5rem;

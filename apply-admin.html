@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC mfers — WL applications</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/game.css" />
+  </head>
+  <body class="game-body">
+    <div class="atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="/">arc<span>_mfers</span></a>
+      <div class="nav-right">
+        <a href="/game-admin">game admin</a>
+      </div>
+    </header>
+
+    <main class="game-shell admin-shell">
+      <p class="kicker">secret admin</p>
+      <h1 class="game-title">WL applications</h1>
+      <p class="game-sub">
+        Applications from <strong>/apply</strong>. Same password as game admin:
+        <code>arc-wheel-2026</code>
+      </p>
+
+      <form class="score-form" id="adminForm">
+        <label>
+          admin password
+          <input id="adminPassword" type="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="btn primary">Load applications</button>
+      </form>
+
+      <p class="admin-status" id="adminStatus"></p>
+      <p class="lb-live-hint" id="applyCount"></p>
+      <ol class="leaderboard" id="applyList"></ol>
+
+      <div class="result-actions" style="margin-top: 1.25rem">
+        <button type="button" class="btn ghost" id="btnExport" disabled>Copy wallets</button>
+        <button type="button" class="btn ghost" id="btnClear" disabled>Clear all</button>
+      </div>
+    </main>
+
+    <script type="module" src="/src/apply-admin.js"></script>
+  </body>
+</html>

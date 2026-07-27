@@ -3,197 +3,160 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARC mfers — mint on Arc Chain</title>
-    <meta
-      name="description"
-      content="ARC mfers — the first mfers on Arc Chain. Mint uniquely generated stick-figure PFPs."
-    />
+    <title>ARC mfers</title>
+    <meta name="description" content="First mfers on Arc Chain. Apply WL. Mint soon." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
-  <body>
-    <div class="atmosphere" aria-hidden="true">
-      <div class="wash"></div>
-      <div class="grain"></div>
-    </div>
+  <body class="home">
+    <aside class="spine" aria-label="Brand">
+      <a href="#top">arc<span>mfers</span></a>
+    </aside>
 
-    <header class="nav">
-      <a class="brand" href="#top">arc<span>_mfers</span></a>
-      <div class="nav-right">
-        <a href="#gallery">gallery</a>
-        <a href="#roadmap">roadmap</a>
-        <a href="/prediction">prediction</a>
-        <a href="#faq">faq</a>
-        <a class="play-btn" href="/game">Play the game</a>
-        <a class="wallet-btn" href="/mint">connect</a>
-      </div>
-    </header>
+    <button type="button" class="dock-toggle" id="menuBtn" aria-label="Menu" aria-expanded="false">
+      menu
+    </button>
+
+    <nav class="dock" id="topnav" aria-label="Primary">
+      <a href="#drop">drop</a>
+      <a href="#wall">wall</a>
+      <a href="#path">path</a>
+      <a href="#ask">faq</a>
+      <a href="/checker">checker</a>
+      <a href="/prediction">prediction</a>
+      <a class="dock-go" href="/apply">apply wl</a>
+    </nav>
 
     <main id="top">
-      <section class="hero">
-        <div class="hero-collage" id="heroCollage" aria-hidden="true"></div>
-        <div class="hero-veil" aria-hidden="true"></div>
-
-        <div class="hero-content">
-          <p class="kicker">first mfers · arc chain</p>
-          <h1 class="wordmark">arc mfers</h1>
-          <p class="lede">
-            Stick figures on Arc. Mint on Arc when the contract goes live.
-          </p>
-          <div class="hero-actions">
-            <a class="btn primary" href="/mint">Enter mint</a>
-            <a class="btn play" href="/game">Play the game</a>
-            <a
-              class="btn ghost"
-              href="https://x.com/Arc_Mfers"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Collab
-            </a>
-            <a
-              class="btn ghost"
-              href="https://x.com/Arc_Mfers"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Notify me
-            </a>
+      <!-- Full-screen orbit billboard — not a split hero -->
+      <section class="board">
+        <div class="board-rings" aria-hidden="true">
+          <span class="ring ring-a"></span>
+          <span class="ring ring-b"></span>
+          <span class="ring ring-c"></span>
+          <div class="orbit-runner">
+            <img id="heroFeature" src="/gallery/420.png" alt="" width="160" height="160" />
           </div>
         </div>
 
-        <aside class="hero-stamp">
-          <a href="https://x.com/Arc_Mfers" target="_blank" rel="noopener noreferrer">
-            follow @arc_mfers
-          </a>
-          <a
-            href="https://x.com/Arc_Mfers/status/2078030155121901985?s=20"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            retweet
-          </a>
-        </aside>
+        <div class="board-type">
+          <p class="board-tag">arc chain</p>
+          <h1>
+            <span class="word-arc">ARC</span>
+            <span class="word-mfers">MFERS</span>
+          </h1>
+          <p class="board-line">First stick figures on Arc. 5,000 strong.</p>
+          <a class="board-cta" href="/apply">Apply for whitelist</a>
+        </div>
+
+        <ul class="board-stats" aria-label="Drop facts">
+          <li><em id="supplyStat">5,000</em><span>supply</span></li>
+          <li><em id="priceStat">TBA</em><span>price</span></li>
+          <li><em>soon</em><span>status</span></li>
+        </ul>
       </section>
 
-      <section class="ticker" aria-label="Drop details">
-        <div>
-          <span>supply</span>
-          <strong id="supplyStat">5,000</strong>
-        </div>
-        <div>
-          <span>price</span>
-          <strong id="priceStat">TBA</strong>
-        </div>
-        <div>
-          <span>chain</span>
-          <strong>Arc</strong>
-        </div>
-        <div>
-          <span>status</span>
-          <strong>coming soon</strong>
-        </div>
-      </section>
+      <!-- Drop = ticket / dial, not card grid -->
+      <section class="chapter drop" id="drop">
+        <header class="chapter-head">
+          <p>the drop</p>
+          <h2>not live yet.<br />get ready.</h2>
+        </header>
 
-      <section class="spotlight" id="mint">
-        <div class="spotlight-art">
-          <img id="mintPreview" src="/gallery/69.png" alt="ARC mfer preview" width="480" height="480" />
-        </div>
-        <div class="spotlight-copy">
-          <p class="kicker">coming soon</p>
-          <h2>Connect before the drop.</h2>
-          <p>
-            The smart contract is not live yet. Connect your wallet on the mint
-            page and follow @arc_mfers for the announcement.
-          </p>
-          <dl class="spotlight-meta">
-            <div>
-              <dt>minted</dt>
-              <dd id="mintedLabel">— / 5,000</dd>
+        <div class="drop-stage">
+          <div class="dial" aria-hidden="true">
+            <div class="dial-track">
+              <div class="dial-fill" id="progressBar"></div>
             </div>
-            <div class="spotlight-meta-price">
-              <dt>price</dt>
-              <dd id="mintPriceLabel">TBA</dd>
+            <img id="mintPreview" src="/gallery/69.png" alt="Mint preview" width="280" height="280" />
+          </div>
+
+          <div class="drop-copy">
+            <dl class="drop-facts">
+              <div>
+                <dt>minted</dt>
+                <dd id="mintedLabel">— / 5,000</dd>
+              </div>
+              <div>
+                <dt>price</dt>
+                <dd id="mintPriceLabel">TBA</dd>
+              </div>
+              <div>
+                <dt>chain</dt>
+                <dd>Arc</dd>
+              </div>
+            </dl>
+            <p>
+              Contract isn’t live. Apply WL, check your phase, connect early when mint opens.
+            </p>
+            <div class="drop-actions">
+              <a class="go" href="/apply">Apply MFER WL</a>
+              <a class="go ghost" href="/checker">Wallet checker</a>
+              <a class="go ghost" href="/mint">Connect wallet</a>
             </div>
-          </dl>
-          <div class="spotlight-actions">
-            <a class="btn primary" href="/checker">Wallet checker</a>
-            <a class="btn primary" href="/mint">Connect wallet</a>
-          </div>
-          <div class="progress" aria-hidden="true">
-            <div class="progress-bar" id="progressBar"></div>
           </div>
         </div>
       </section>
 
-      <section class="game-cta" id="play">
-        <div class="game-cta-copy">
-          <p class="kicker">while you wait</p>
-          <h2>Ladder climb</h2>
-          <p>Pick a mfer. Mash left and right. Climb as high as you can in 30 seconds.</p>
-
-          <div class="ladder-king" id="ladderKing">
-            <p class="ladder-king-label">king of the ladder</p>
-            <p class="ladder-king-line" id="ladderKingLine">Loading #1…</p>
-            <p class="ladder-king-reset">Board resets every Sunday.</p>
-          </div>
-
-          <a class="btn play" href="/game" id="ladderKingCta">Play to dethrone them</a>
+      <!-- Season note — compact strip -->
+      <section class="strip" id="play">
+        <div>
+          <p class="strip-kicker">ladder climb · closed</p>
+          <p class="strip-line" id="ladderKingLine">Season closed.</p>
         </div>
+        <a class="go ghost" href="/game" id="ladderKingCta">Game page</a>
       </section>
 
-      <section class="gallery" id="gallery">
-        <header class="section-head">
-          <h2>gallery</h2>
-          <p>Tap any mfer to pin it above.</p>
+      <!-- Wall = masonry, not film strip -->
+      <section class="chapter wall" id="wall">
+        <header class="chapter-head">
+          <p>the wall</p>
+          <h2>pick a face.</h2>
         </header>
         <div class="masonry" id="collectionGrid"></div>
       </section>
 
-      <section class="roadmap" id="roadmap">
-        <header class="section-head">
-          <h2>🗺️ roadmap</h2>
+      <!-- Path = orbit stations, not 3-column timeline cards -->
+      <section class="chapter path" id="path">
+        <header class="chapter-head">
+          <p>the path</p>
+          <h2>where this goes.</h2>
         </header>
-        <div class="roadmap-grid">
-          <article class="roadmap-phase">
-            <p class="roadmap-label">Phase 1</p>
-            <h3 class="roadmap-title">Foundation</h3>
-            <ul class="roadmap-list">
-              <li>Launch Genesis Collection</li>
-              <li>Build the core community</li>
-              <li>Community events &amp; WL campaigns</li>
-              <li>Holder verification</li>
-            </ul>
-          </article>
-          <article class="roadmap-phase">
-            <p class="roadmap-label">Phase 2</p>
-            <h3 class="roadmap-title">Ecosystem</h3>
-            <ul class="roadmap-list">
-              <li>NFT reveal</li>
-              <li>Holder rewards &amp; exclusive access</li>
-            </ul>
-          </article>
-          <article class="roadmap-phase">
-            <p class="roadmap-label">Phase 3</p>
-            <h3 class="roadmap-title">Market Predictions</h3>
-            <ul class="roadmap-list">
-              <li>Launch prediction platform (Beta)</li>
-              <li>Predict around Arc ecosystem</li>
-              <li>Leaderboards &amp; seasonal competitions</li>
-              <li>Reward active participants</li>
-            </ul>
-          </article>
-        </div>
+        <ol class="stations">
+          <li>
+            <span class="station-num">01</span>
+            <div>
+              <h3>Foundation</h3>
+              <p>Collection launch · community · WL campaigns · holder verification</p>
+            </div>
+          </li>
+          <li>
+            <span class="station-num">02</span>
+            <div>
+              <h3>Ecosystem</h3>
+              <p>Reveal · holder rewards · exclusive access</p>
+            </div>
+          </li>
+          <li>
+            <span class="station-num">03</span>
+            <div>
+              <h3>Predictions</h3>
+              <p>Prediction beta · Arc markets · seasons · player rewards</p>
+              <a class="inline" href="/prediction">Open prediction →</a>
+            </div>
+          </li>
+        </ol>
       </section>
 
-      <section class="faq" id="faq">
-        <header class="section-head">
-          <h2>faq</h2>
+      <section class="chapter ask" id="ask">
+        <header class="chapter-head">
+          <p>ask</p>
+          <h2>quick answers.</h2>
         </header>
         <div class="faq-list">
           <details open>
@@ -202,27 +165,28 @@
           </details>
           <details>
             <summary>Which network?</summary>
-            <p>
-              Arc Chain. Your wallet will switch if you’re on the wrong network.
-            </p>
+            <p>Arc Chain. Wallet switches if you’re on the wrong network.</p>
           </details>
           <details>
             <summary>How do I mint?</summary>
-            <p>
-              Open the mint page, connect your wallet, and wait for the contract
-              announcement on X.
-            </p>
+            <p>Connect on the mint page. Wait for the X announcement.</p>
           </details>
           <details>
             <summary>When does mint open?</summary>
-            <p>Mint is coming soon. Follow @arc_mfers on X for the drop.</p>
+            <p>Coming soon. Follow @arc_mfers.</p>
           </details>
         </div>
       </section>
+
+      <section class="endcap">
+        <h2>get on the list.</h2>
+        <p>Follow + retweet. We review every application.</p>
+        <a class="go big" href="/apply">Apply MFER WL</a>
+      </section>
     </main>
 
-    <footer class="footer">
-      <img id="navMark" src="/gallery/420.png" alt="" width="28" height="28" />
+    <footer class="site-foot">
+      <img id="navMark" src="/gallery/420.png" alt="" width="32" height="32" />
       <span>arc mfers · arc chain</span>
     </footer>
 

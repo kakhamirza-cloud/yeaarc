@@ -51,6 +51,26 @@
   to = "/prediction.html"
   status = 200
 
+[[redirects]]
+  from = "/apply"
+  to = "/apply.html"
+  status = 200
+
+[[redirects]]
+  from = "/apply/"
+  to = "/apply.html"
+  status = 200
+
+[[redirects]]
+  from = "/apply-admin"
+  to = "/apply-admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/apply-admin/"
+  to = "/apply-admin.html"
+  status = 200
+
 # Gallery samples
 [[redirects]]
   from = "/gallery/*"

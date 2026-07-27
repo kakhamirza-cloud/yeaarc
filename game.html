@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>ARC mfers — Ladder Climb</title>
-    <meta name="description" content="Climb the endless ladder. Pick a mfer. Beat the clock." />
+    <title>ARC mfers — Ladder Climb (closed)</title>
+    <meta name="description" content="Ladder Climb season is over. Thanks for playing." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/styles.css" />
@@ -25,14 +25,30 @@
       <div class="nav-right">
         <a href="/">home</a>
         <a href="/mint">mint</a>
+        <a href="/apply">apply</a>
         <a href="/prediction">prediction</a>
         <a class="play-btn" href="/game" aria-current="page">Play the game</a>
       </div>
     </header>
 
     <main class="game-shell">
+      <!-- Closed: season over — flip GAME_CLOSED in game.js to reopen -->
+      <section class="game-screen closed-screen" id="screenClosed">
+        <p class="kicker">mini game</p>
+        <h1 class="game-title">game over</h1>
+        <p class="game-sub closed-copy">
+          Ladder Climb is done for now. Thanks for climbing, spinning, and flexing on the board.
+        </p>
+        <p class="closed-note">Season closed — you can&apos;t start a new run.</p>
+        <div class="closed-actions">
+          <a class="btn primary" href="/checker">Wallet checker</a>
+          <a class="btn ghost" href="/">Back to home</a>
+          <a class="btn ghost" href="/mint">Mint</a>
+        </div>
+      </section>
+
       <!-- Character select -->
-      <section class="game-screen select-screen" id="screenSelect">
+      <section class="game-screen select-screen hidden" id="screenSelect">
         <div class="select-layout">
           <aside class="select-top3" aria-label="Live top 3">
             <p class="kicker">live top 3</p>
