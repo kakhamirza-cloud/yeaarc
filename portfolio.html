@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARC mfers — wallet checker</title>
+    <title>ARC mfers — NFT portfolio</title>
     <meta
       name="description"
-      content="Check if your wallet is whitelisted for ARC mfers mint."
+      content="Paste your wallets and see NFT holdings — coming soon for Arc mfers. ETH first, ARC next."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,46 +29,36 @@
         <a href="/mint">mint</a>
         <a href="/apply">apply</a>
         <a href="/prediction">prediction</a>
-        <a href="/portfolio">portfolio</a>
+        <a href="/portfolio" aria-current="page">portfolio</a>
         <a class="play-btn" href="/game">Play the game</a>
         <a class="wallet-btn" href="/mint">connect</a>
       </div>
     </header>
 
-    <main class="checker-page reveal is-in">
-      <p class="kicker">mint phase</p>
-      <h1 class="checker-title">wallet checker</h1>
-      <p class="checker-copy">Enter your wallet to see which phase you&apos;re in.</p>
-
-      <form class="checker-card" id="checkerForm">
-        <label class="checker-label" for="walletInput">wallet address</label>
-        <input
-          id="walletInput"
-          class="checker-input"
-          type="text"
-          inputmode="text"
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="0x…"
-          required
-        />
-        <button type="submit" class="btn primary checker-submit" id="btnCheck">
-          Check wallet
-        </button>
-      </form>
-
-      <div class="checker-result hidden" id="checkerResult" role="status" aria-live="polite"></div>
-
-      <p class="checker-note">
-        <a href="/">← Back to home</a>
+    <main class="coming-soon-page reveal is-in">
+      <p class="kicker">holder tool · multi-wallet nfts</p>
+      <h1 class="coming-soon-title">coming soon</h1>
+      <p class="coming-soon-copy">
+        Paste your wallets and see all the NFTs you’re holding — no connect needed.
+        Starting on ETH for Arc mfers holders. ARC is coming next for sure.
+        Why ETH first? Because we love every chain.
       </p>
+      <div class="coming-soon-actions">
+        <a
+          class="btn notify"
+          href="https://x.com/Arc_Mfers"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Notify me on X
+        </a>
+        <a class="btn ghost" href="/">Back to home</a>
+      </div>
     </main>
 
     <footer class="footer">
       <img src="/gallery/420.png" alt="" width="28" height="28" />
       <span>ARC mfers · Arc Chain</span>
     </footer>
-
-    <script type="module" src="/src/checker.js"></script>
   </body>
 </html>

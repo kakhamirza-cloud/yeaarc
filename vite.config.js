@@ -20,6 +20,7 @@ export default defineConfig({
         "game-admin": resolve(root, "game-admin.html"),
         checker: resolve(root, "checker.html"),
         prediction: resolve(root, "prediction.html"),
+        portfolio: resolve(root, "portfolio.html"),
         apply: resolve(root, "apply.html"),
         "apply-admin": resolve(root, "apply-admin.html"),
       },

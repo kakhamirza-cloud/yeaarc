@@ -394,6 +394,7 @@ function rewriteAssetPath(pathname) {
   if (pathname === "/game-admin" || pathname === "/game-admin/") return "/game-admin.html";
   if (pathname === "/checker" || pathname === "/checker/") return "/checker.html";
   if (pathname === "/prediction" || pathname === "/prediction/") return "/prediction.html";
+  if (pathname === "/portfolio" || pathname === "/portfolio/") return "/portfolio.html";
   if (pathname === "/apply" || pathname === "/apply/") return "/apply.html";
   if (pathname === "/apply-admin" || pathname === "/apply-admin/") return "/apply-admin.html";
   if (pathname === "/" || pathname === "") return "/index.html";
