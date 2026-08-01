@@ -12,6 +12,8 @@ const els = {
   btnBuy: document.getElementById("btnBuy"),
   btnBuyClose: document.getElementById("btnBuyClose"),
   buySoon: document.getElementById("buySoon"),
+  btnShare: document.getElementById("btnShare"),
+  btnShareWallet: document.getElementById("btnShareWallet"),
   btnRefresh: document.getElementById("btnRefresh"),
   btnLogout: document.getElementById("btnLogout"),
   deskNote: document.getElementById("deskNote"),
@@ -31,6 +33,19 @@ function note(el, message, ok = false) {
   el.textContent = message || "";
   el.classList.toggle("ok", Boolean(ok && message));
   el.classList.toggle("error", Boolean(!ok && message));
+}
+
+function shareUrl() {
+  return `${window.location.origin}/prediction`;
+}
+
+function tweetWithFriend(noteEl) {
+  const text = "Come try the prediction market from ARC mfers";
+  const intent = new URL("https://twitter.com/intent/tweet");
+  intent.searchParams.set("text", text);
+  intent.searchParams.set("url", shareUrl());
+  window.open(intent.toString(), "_blank", "noopener,noreferrer");
+  note(noteEl, "Opening share…", true);
 }
 
 async function api(path, body) {
@@ -188,6 +203,9 @@ els.btnBuy.addEventListener("click", () => {
 els.btnBuyClose.addEventListener("click", () => {
   els.buySoon.classList.add("hidden");
 });
+
+els.btnShare?.addEventListener("click", () => tweetWithFriend(els.deskNote));
+els.btnShareWallet?.addEventListener("click", () => tweetWithFriend(els.enterNote));
 
 els.btnRefresh.addEventListener("click", async () => {
   try {
