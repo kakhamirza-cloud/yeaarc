@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC mfers — prediction admin</title>
+    <meta name="description" content="Admin controls for ARC mfers prediction markets." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="game-body">
+    <div class="atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="/">arc<span>_mfers</span></a>
+      <div class="nav-right">
+        <a href="/prediction">prediction</a>
+      </div>
+    </header>
+
+    <main class="game-shell admin-shell predict-page">
+      <p class="kicker">secret admin</p>
+      <h1 class="predict-title">prediction admin</h1>
+
+      <form class="score-form predict-form" id="adminForm">
+        <label class="apply-label" for="adminPassword">password</label>
+        <input
+          id="adminPassword"
+          class="apply-input"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
+        <button type="submit" class="btn primary">Load status</button>
+      </form>
+
+      <p class="admin-status" id="adminStatus"></p>
+
+      <div class="predict-card" id="adminDesk">
+        <p class="market-meta" id="adminMeta">Sign in to manage.</p>
+        <h2 class="market-question" id="adminQuestion">—</h2>
+        <p class="market-status" id="adminMarketStatus">—</p>
+        <div class="predict-actions">
+          <button type="button" class="btn primary" id="btnForceResolve" disabled>
+            Force resolve all open
+          </button>
+          <button type="button" class="btn ghost" id="btnRefresh" disabled>Refresh</button>
+          <button type="button" class="btn ghost" id="btnReset" disabled>Reset all data</button>
+        </div>
+        <p class="predict-note" id="adminNote"></p>
+      </div>
+    </main>
+
+    <script type="module" src="/src/prediction-admin.js"></script>
+  </body>
+</html>

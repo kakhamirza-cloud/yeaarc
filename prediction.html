@@ -4,10 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ARC mfers — predictions</title>
-    <meta
-      name="description"
-      content="ARC mfers market predictions on Arc Chain — coming soon."
-    />
+    <meta name="description" content="Local test prediction markets for mint-whitelisted wallets." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -35,29 +32,72 @@
       </div>
     </header>
 
-    <main class="coming-soon-page reveal is-in">
-      <p class="kicker">phase 3 · market predictions</p>
-      <h1 class="coming-soon-title">coming soon</h1>
-      <p class="coming-soon-copy">
-        Predict around the Arc ecosystem. Leaderboards, seasonal competitions, and
-        rewards for active mfers — launching after the collection drops.
-      </p>
-      <div class="coming-soon-actions">
-        <a
-          class="btn notify"
-          href="https://x.com/Arc_Mfers"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Notify me on X
-        </a>
-        <a class="btn ghost" href="/">Back to home</a>
-      </div>
+    <main class="predict-page reveal is-in">
+      <section class="predict-card" id="walletPanel">
+        <p class="kicker">mint whitelist</p>
+        <h1 class="predict-title">wallet</h1>
+        <p class="predict-lead">Paste a mint-whitelisted wallet to enter.</p>
+        <form class="predict-form" id="enterForm">
+          <label class="apply-label" for="walletInput">wallet address</label>
+          <input
+            id="walletInput"
+            class="apply-input"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="0x…"
+            maxlength="42"
+            required
+          />
+          <button type="submit" class="btn primary" id="btnEnter">Enter</button>
+        </form>
+        <p class="predict-note" id="enterNote"></p>
+      </section>
+
+      <section class="predict-desk hidden" id="deskPanel">
+        <div class="predict-top">
+          <div>
+            <p class="kicker">prediction</p>
+            <h1 class="predict-title">markets</h1>
+          </div>
+          <div class="predict-balance">
+            <span>points</span>
+            <strong id="pointsLabel">0</strong>
+          </div>
+        </div>
+
+        <p class="predict-wallet" id="walletLabel">—</p>
+
+        <div class="predict-actions">
+          <button type="button" class="btn play" id="btnFaucet">Claim faucet (+500)</button>
+          <button type="button" class="btn ghost" id="btnBuy">Buy</button>
+          <button type="button" class="btn ghost" id="btnRefresh">Refresh</button>
+          <button type="button" class="btn ghost" id="btnLogout">Switch wallet</button>
+        </div>
+        <p class="predict-note" id="deskNote"></p>
+
+        <div class="buy-soon hidden" id="buySoon" role="status">
+          <p class="kicker">shop</p>
+          <h2 class="predict-title">coming soon</h2>
+          <p>You can buy here with points.</p>
+          <button type="button" class="btn ghost" id="btnBuyClose">Close</button>
+        </div>
+
+        <div class="markets-list" id="marketsList"></div>
+
+        <section class="history-block">
+          <h3>recent results</h3>
+          <ul class="history-list" id="historyList"></ul>
+        </section>
+      </section>
     </main>
 
     <footer class="footer">
       <img src="/gallery/420.png" alt="" width="28" height="28" />
-      <span>ARC mfers · Arc Chain</span>
+      <span>ARC mfers · Arc Chain · local test</span>
     </footer>
+
+    <script type="module" src="/src/prediction.js"></script>
   </body>
 </html>

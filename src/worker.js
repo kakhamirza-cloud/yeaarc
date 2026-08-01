@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker: static site + leaderboard + prize wheel (KV).
+ * Cloudflare Worker: static site + leaderboard + prize wheel + prediction (KV).
  */
 import {
   mergeLeaderboard,
@@ -12,10 +12,20 @@ import {
   countPrizeClaims,
 } from "./game-shared.js";
 import { isMintWhitelisted } from "./mint-whitelist.js";
+import {
+  createPredictionState,
+  claimFaucet,
+  placeBet,
+  ensureOpenMarkets,
+  resolveExpiredMarkets,
+  forceResolveOpenMarket,
+  snapshotState,
+} from "./prediction-shared.js";
 
 const LB_KEY = "climb-v1";
 const WHEEL_KEY = "wheel-v1";
 const WL_APPLY_KEY = "wl-apply-v1";
+const PREDICTION_KEY = "prediction-v1";
 const MAX_STORE = 50;
 const TOP_PUBLIC = 10;
 const MAX_WL_APPLIES = 5000;
@@ -73,6 +83,29 @@ async function readWlApplies(env) {
 
 async function writeWlApplies(env, list) {
   await env.LEADERBOARD.put(WL_APPLY_KEY, JSON.stringify(list.slice(0, MAX_WL_APPLIES)));
+}
+
+async function readPrediction(env) {
+  if (!env.LEADERBOARD) return createPredictionState();
+  try {
+    const raw = await env.LEADERBOARD.get(PREDICTION_KEY, "json");
+    return createPredictionState(raw && typeof raw === "object" ? raw : {});
+  } catch {
+    return createPredictionState();
+  }
+}
+
+async function writePrediction(env, state) {
+  // Never persist a client-facing dump — state stays server-side in KV
+  await env.LEADERBOARD.put(
+    PREDICTION_KEY,
+    JSON.stringify({
+      adminPassword: state.adminPassword,
+      publicOpen: Boolean(state.publicOpen),
+      players: state.players || {},
+      markets: Array.isArray(state.markets) ? state.markets.slice(0, 40) : [],
+    })
+  );
 }
 
 function newClaimToken() {
@@ -388,12 +421,137 @@ async function handleWheel(request, env, pathname) {
   return json({ error: "method not allowed" }, 405);
 }
 
+async function requireWhitelistedWallet(body) {
+  const wallet = normalizeWallet(body?.wallet);
+  if (!wallet) return { error: "valid wallet address required (0x…)", status: 400 };
+  if (!isMintWhitelisted(wallet)) {
+    return { error: "wallet not on mint whitelist — access denied", status: 403, wallet };
+  }
+  return { wallet };
+}
+
+async function handlePrediction(request, env, pathname) {
+  if (request.method === "OPTIONS") return json({ ok: true });
+  if (request.method !== "POST") return json({ error: "method not allowed" }, 405);
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad json" }, 400);
+  }
+
+  // Admin only — same password as wheel admin (keeps one secret for ops)
+  if (pathname === "/api/prediction/admin") {
+    const wheel = await readWheel(env);
+    const prediction = await readPrediction(env);
+    const password = String(body?.password || "");
+    if (password !== wheel.adminPassword && password !== prediction.adminPassword) {
+      return json({ error: "bad password" }, 401);
+    }
+
+    const action = String(body?.action || "");
+    if (action === "forceResolve") {
+      const forced = forceResolveOpenMarket(prediction);
+      if (forced.error) return json({ error: forced.error }, forced.status);
+      await writePrediction(env, prediction);
+      return json({
+        ok: true,
+        ...snapshotState(prediction, body?.wallet),
+        playerCount: Object.keys(prediction.players).length,
+        marketCount: prediction.markets.length,
+      });
+    }
+    if (action === "status") {
+      ensureOpenMarkets(prediction);
+      resolveExpiredMarkets(prediction);
+      await writePrediction(env, prediction);
+      return json({
+        ok: true,
+        publicOpen: prediction.publicOpen,
+        ...snapshotState(prediction, body?.wallet),
+        playerCount: Object.keys(prediction.players).length,
+        marketCount: prediction.markets.length,
+      });
+    }
+    if (action === "reset") {
+      // Wipe desk for a clean public test
+      const fresh = createPredictionState({
+        adminPassword: prediction.adminPassword,
+      });
+      ensureOpenMarkets(fresh);
+      await writePrediction(env, fresh);
+      return json({
+        ok: true,
+        reset: true,
+        ...snapshotState(fresh, null),
+        playerCount: 0,
+        marketCount: fresh.markets.length,
+      });
+    }
+    return json({ error: "unknown action" }, 400);
+  }
+
+  if (pathname === "/api/prediction/enter") {
+    const gate = await requireWhitelistedWallet(body);
+    if (gate.error) return json({ error: gate.error, whitelisted: false }, gate.status);
+    const prediction = await readPrediction(env);
+    ensureOpenMarkets(prediction);
+    resolveExpiredMarkets(prediction);
+    await writePrediction(env, prediction);
+    return json({
+      ok: true,
+      whitelisted: true,
+      ...snapshotState(prediction, gate.wallet),
+    });
+  }
+
+  if (pathname === "/api/prediction/faucet") {
+    const gate = await requireWhitelistedWallet(body);
+    if (gate.error) return json({ error: gate.error }, gate.status);
+    const prediction = await readPrediction(env);
+    const result = claimFaucet(prediction, gate.wallet);
+    if (result.error) return json({ error: result.error }, result.status);
+    await writePrediction(env, prediction);
+    return json({ ...result, ...snapshotState(prediction, gate.wallet) });
+  }
+
+  if (pathname === "/api/prediction/bet") {
+    const gate = await requireWhitelistedWallet(body);
+    if (gate.error) return json({ error: gate.error }, gate.status);
+    const prediction = await readPrediction(env);
+    ensureOpenMarkets(prediction);
+    const result = placeBet(prediction, {
+      wallet: gate.wallet,
+      marketId: body?.marketId,
+      side: body?.side,
+      amount: body?.amount,
+    });
+    if (result.error) return json({ error: result.error }, result.status);
+    await writePrediction(env, prediction);
+    return json({ ...result, ...snapshotState(prediction, gate.wallet) });
+  }
+
+  if (pathname === "/api/prediction/state") {
+    const gate = await requireWhitelistedWallet(body);
+    if (gate.error) return json({ error: gate.error }, gate.status);
+    const prediction = await readPrediction(env);
+    ensureOpenMarkets(prediction);
+    resolveExpiredMarkets(prediction);
+    await writePrediction(env, prediction);
+    return json(snapshotState(prediction, gate.wallet));
+  }
+
+  return json({ error: "not found" }, 404);
+}
+
 function rewriteAssetPath(pathname) {
   if (pathname === "/mint" || pathname === "/mint/") return "/mint.html";
   if (pathname === "/game" || pathname === "/game/") return "/game.html";
   if (pathname === "/game-admin" || pathname === "/game-admin/") return "/game-admin.html";
   if (pathname === "/checker" || pathname === "/checker/") return "/checker.html";
   if (pathname === "/prediction" || pathname === "/prediction/") return "/prediction.html";
+  if (pathname === "/prediction-admin" || pathname === "/prediction-admin/") return "/prediction-admin.html";
   if (pathname === "/portfolio" || pathname === "/portfolio/") return "/portfolio.html";
   if (pathname === "/apply" || pathname === "/apply/") return "/apply.html";
   if (pathname === "/apply-admin" || pathname === "/apply-admin/") return "/apply-admin.html";
@@ -410,6 +568,7 @@ export default {
     if (pathname.startsWith("/api/wl-apply")) return handleWlApply(request, env);
     if (pathname === "/api/leaderboard") return handleLeaderboard(request, env);
     if (pathname.startsWith("/api/wheel")) return handleWheel(request, env, pathname);
+    if (pathname.startsWith("/api/prediction")) return handlePrediction(request, env, pathname);
 
     const rewritten = rewriteAssetPath(pathname);
     if (rewritten && env.ASSETS) {

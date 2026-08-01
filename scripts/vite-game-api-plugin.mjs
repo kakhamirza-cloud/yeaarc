@@ -2,6 +2,9 @@
  * Local game APIs for `npm run dev`: leaderboard + prize wheel.
  * Production uses the Cloudflare Worker + KV instead.
  */
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   mergeLeaderboard,
   normalizeTwitterUser,
@@ -13,8 +16,39 @@ import {
   countPrizeClaims,
 } from "../src/game-shared.js";
 import { isMintWhitelisted } from "../src/mint-whitelist.js";
+import {
+  createPredictionState,
+  claimFaucet,
+  placeBet,
+  ensureOpenMarkets,
+  resolveExpiredMarkets,
+  forceResolveOpenMarket,
+  snapshotState,
+} from "../src/prediction-shared.js";
 
 const TOP_PUBLIC = 10;
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const PREDICTION_FILE = join(ROOT, "data", "prediction-local.json");
+
+function loadPredictionState() {
+  try {
+    if (existsSync(PREDICTION_FILE)) {
+      return createPredictionState(JSON.parse(readFileSync(PREDICTION_FILE, "utf8")));
+    }
+  } catch {
+    /* fresh state */
+  }
+  return createPredictionState();
+}
+
+function savePredictionState(state) {
+  try {
+    mkdirSync(dirname(PREDICTION_FILE), { recursive: true });
+    writeFileSync(PREDICTION_FILE, `${JSON.stringify(state, null, 2)}\n`);
+  } catch {
+    /* ignore local persist errors */
+  }
+}
 
 function readBody(req) {
   return new Promise(async (resolve) => {
@@ -90,6 +124,7 @@ export function viteGameApiPlugin() {
   let wheel = createWheelState();
   /** @type {Array<{ wallet: string, twitter: string|null, followed: boolean, retweetedLiked: boolean, at: number }>} */
   let wlApplies = [];
+  let prediction = loadPredictionState();
 
   return {
     name: "arc-mfers-game-api",
@@ -291,6 +326,152 @@ export function viteGameApiPlugin() {
             leaderboardCount: scores.length,
             saved: serializeWheelState(wheel),
           });
+        }
+
+        // ── Prediction market (local) ──
+        // Password only on /api/prediction/admin — public routes need mint whitelist wallet
+        if (url === "/api/prediction/admin") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          if (String(data?.password || "") !== prediction.adminPassword) {
+            return send(res, 401, { error: "bad password" });
+          }
+          const action = String(data?.action || "");
+          if (action === "openPublic") {
+            prediction.publicOpen = true;
+            savePredictionState(prediction);
+            return send(res, 200, { ok: true, publicOpen: true });
+          }
+          if (action === "lockPublic") {
+            prediction.publicOpen = false;
+            savePredictionState(prediction);
+            return send(res, 200, { ok: true, publicOpen: false });
+          }
+          if (action === "forceResolve") {
+            const forced = forceResolveOpenMarket(prediction);
+            if (forced.error) return send(res, forced.status, { error: forced.error });
+            savePredictionState(prediction);
+            return send(res, 200, {
+              ok: true,
+              ...snapshotState(prediction, data?.wallet),
+              playerCount: Object.keys(prediction.players).length,
+              marketCount: prediction.markets.length,
+            });
+          }
+          if (action === "reset") {
+            prediction = createPredictionState({
+              adminPassword: prediction.adminPassword,
+            });
+            ensureOpenMarkets(prediction);
+            savePredictionState(prediction);
+            return send(res, 200, {
+              ok: true,
+              reset: true,
+              ...snapshotState(prediction, null),
+              playerCount: 0,
+              marketCount: prediction.markets.length,
+            });
+          }
+          if (action === "status") {
+            ensureOpenMarkets(prediction);
+            resolveExpiredMarkets(prediction);
+            savePredictionState(prediction);
+            return send(res, 200, {
+              ok: true,
+              publicOpen: prediction.publicOpen,
+              ...snapshotState(prediction, data?.wallet),
+              playerCount: Object.keys(prediction.players).length,
+              marketCount: prediction.markets.length,
+            });
+          }
+          return send(res, 400, { error: "unknown action" });
+        }
+
+        if (url === "/api/prediction/enter") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          if (!isMintWhitelisted(wallet)) {
+            return send(res, 403, {
+              error: "wallet not on mint whitelist — access denied",
+              whitelisted: false,
+            });
+          }
+
+          ensureOpenMarkets(prediction);
+          resolveExpiredMarkets(prediction);
+          savePredictionState(prediction);
+          return send(res, 200, {
+            ok: true,
+            whitelisted: true,
+            ...snapshotState(prediction, wallet),
+          });
+        }
+
+        if (url === "/api/prediction/faucet") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          if (!isMintWhitelisted(wallet)) {
+            return send(res, 403, { error: "wallet not on mint whitelist" });
+          }
+
+          const result = claimFaucet(prediction, wallet);
+          if (result.error) return send(res, result.status, { error: result.error });
+          savePredictionState(prediction);
+          return send(res, 200, { ...result, ...snapshotState(prediction, wallet) });
+        }
+
+        if (url === "/api/prediction/bet") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          if (!isMintWhitelisted(wallet)) {
+            return send(res, 403, { error: "wallet not on mint whitelist" });
+          }
+
+          ensureOpenMarkets(prediction);
+          const result = placeBet(prediction, {
+            wallet,
+            marketId: data?.marketId,
+            side: data?.side,
+            amount: data?.amount,
+          });
+          if (result.error) return send(res, result.status, { error: result.error });
+          savePredictionState(prediction);
+          return send(res, 200, { ...result, ...snapshotState(prediction, wallet) });
+        }
+
+        if (url === "/api/prediction/state") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          if (!isMintWhitelisted(wallet)) {
+            return send(res, 403, { error: "wallet not on mint whitelist" });
+          }
+
+          ensureOpenMarkets(prediction);
+          resolveExpiredMarkets(prediction);
+          savePredictionState(prediction);
+          return send(res, 200, snapshotState(prediction, wallet));
         }
 
         next();
