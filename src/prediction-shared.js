@@ -28,23 +28,17 @@ export const MAX_POINTS_BALANCE = 50_000;
 export const TEST_TO_REAL_RATE = null;
 
 const QUESTIONS = [
-  (y) => `Will BTC close above $95,000 on ${fmtDate(addDays(0))} (${y})?`,
-  (y) => `Will ETH close above $3,500 on ${fmtDate(addDays(0))} (${y})?`,
-  (y) => `Will SOL close above $180 on ${fmtDate(addDays(0))} (${y})?`,
-  (y) => `Will BTC outperform ETH over the next 24 hours (${y})?`,
-  (y) => `Will ETH gas average stay under 20 gwei for the next 24 hours (${y})?`,
-  (y) => `Will total crypto market cap stay above $2.5T through ${fmtDate(addDays(0))} (${y})?`,
-  (y) => `Will Arc Chain TVL exceed $10M by Dec 31, ${y}?`,
-  (y) => `Will an Arc Chain mainnet milestone drop before Dec 31, ${y}?`,
-  (y) => `Will BTC dominate ETH dominance gap by more than 30% on ${fmtDate(addDays(0))} (${y})?`,
-  (y) => `Will a major L2 announce Arc integration before Dec 31, ${y}?`,
+  (ctx) => `Will BTC close above $95,000 on ${fmtDate(ctx.closeDay)}?`,
+  (ctx) => `Will ETH close above $3,500 on ${fmtDate(ctx.closeDay)}?`,
+  (ctx) => `Will SOL close above $180 on ${fmtDate(ctx.closeDay)}?`,
+  (ctx) => `Will BTC outperform ETH over the next 24 hours?`,
+  (ctx) => `Will ETH gas average stay under 20 gwei for the next 24 hours?`,
+  (ctx) => `Will total crypto market cap stay above $2.5T through ${fmtDate(ctx.closeDay)}?`,
+  (ctx) => `Will Arc Chain TVL exceed $10M by Dec 31, ${ctx.year}?`,
+  (ctx) => `Will an Arc Chain mainnet milestone drop before Dec 31, ${ctx.year}?`,
+  (ctx) => `Will BTC dominate ETH dominance gap by more than 30% on ${fmtDate(ctx.closeDay)}?`,
+  (ctx) => `Will a major L2 announce Arc integration before Dec 31, ${ctx.year}?`,
 ];
-
-function addDays(n) {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() + n);
-  return d;
-}
 
 function fmtDate(d) {
   return d.toLocaleDateString("en-US", {
@@ -53,6 +47,15 @@ function fmtDate(d) {
     year: "numeric",
     timeZone: "UTC",
   });
+}
+
+function questionContext(now = Date.now()) {
+  // Use the market close day so dated questions stay current (never “yesterday”)
+  const closeDay = new Date(now + MARKET_DURATION_MS);
+  return {
+    closeDay,
+    year: closeDay.getUTCFullYear(),
+  };
 }
 
 export function utcDayKey(ts = Date.now()) {
@@ -137,14 +140,14 @@ function openMarkets(state, now = Date.now()) {
   return state.markets.filter((m) => m.status === "open" && now < m.closesAt);
 }
 
-function pickQuestion(state, seed) {
-  const year = 2026;
-  const used = new Set(openMarkets(state).map((m) => m.question));
+function pickQuestion(state, seed, now = Date.now()) {
+  const ctx = questionContext(now);
+  const used = new Set(openMarkets(state, now).map((m) => m.question));
   for (let i = 0; i < QUESTIONS.length; i++) {
-    const q = QUESTIONS[Math.abs(seed + i) % QUESTIONS.length](year);
+    const q = QUESTIONS[Math.abs(seed + i) % QUESTIONS.length](ctx);
     if (!used.has(q)) return q;
   }
-  return QUESTIONS[Math.abs(seed) % QUESTIONS.length](year);
+  return QUESTIONS[Math.abs(seed) % QUESTIONS.length](ctx);
 }
 
 export function createMarket(state, now = Date.now()) {
@@ -152,7 +155,7 @@ export function createMarket(state, now = Date.now()) {
   const market = {
     id: `m_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
     dayKey: utcDayKey(now),
-    question: pickQuestion(state, seed),
+    question: pickQuestion(state, seed, now),
     createdAt: now,
     closesAt: now + MARKET_DURATION_MS,
     status: "open",
