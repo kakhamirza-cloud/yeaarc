@@ -21,7 +21,6 @@ const els = {
   deskNote: document.getElementById("deskNote"),
   marketsList: document.getElementById("marketsList"),
   historyList: document.getElementById("historyList"),
-  faqRate: document.getElementById("faqRate"),
 };
 
 let wallet = localStorage.getItem(WALLET_KEY) || "";
@@ -135,8 +134,6 @@ function renderDesk(data) {
     ? data.openMarkets
     : (data.markets || []).filter((m) => m.status === "open").slice(0, 3);
 
-  const rate = data.testToRealRate || player?.testToRealRate || 100;
-  if (els.faqRate) els.faqRate.textContent = `${rate}:1`;
   shareAmount = player?.shareAmount || data.shareAmount || 100;
   shopOpen = Boolean(player?.shopOpen || player?.isMfer);
 

@@ -22,9 +22,9 @@ export const MAX_BET_AMOUNT = 2000;
 export const MAX_POINTS_BALANCE = 50_000;
 /**
  * Planned later conversion: test points → real points.
- * Example messaging: 100 test pts = 1 real pt (final rate TBA).
+ * Rate not decided yet — UI shows xxx:1 / TBA.
  */
-export const TEST_TO_REAL_RATE = 100;
+export const TEST_TO_REAL_RATE = null;
 
 const QUESTIONS = [
   (y) => `Will BTC close above $95,000 on ${fmtDate(addDays(0))} (${y})?`,
