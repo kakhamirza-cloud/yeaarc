@@ -181,40 +181,7 @@ async function handleWlApply(request, env) {
   const { pathname } = url;
 
   if (pathname === "/api/wl-apply" && request.method === "POST") {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return json({ error: "bad json" }, 400);
-    }
-
-    const wallet = normalizeWallet(body?.wallet);
-    if (!wallet) return json({ error: "valid wallet address required (0x…)" }, 400);
-    if (!body?.followed || !body?.retweetedLiked) {
-      return json({ error: "confirm follow + retweet & like first" }, 400);
-    }
-
-    const twitter = normalizeTwitterUser(body?.twitter) || null;
-    const list = await readWlApplies(env);
-    const idx = list.findIndex((row) => normalizeWallet(row.wallet) === wallet);
-    const entry = {
-      wallet,
-      twitter,
-      followed: true,
-      retweetedLiked: true,
-      at: Date.now(),
-    };
-
-    let updated = false;
-    if (idx >= 0) {
-      list[idx] = entry;
-      updated = true;
-    } else {
-      list.unshift(entry);
-    }
-
-    await writeWlApplies(env, list);
-    return json({ ok: true, updated });
+    return json({ error: "WL applications are closed", closed: true }, 403);
   }
 
   if (pathname === "/api/wl-apply/admin" && request.method === "POST") {

@@ -1229,6 +1229,21 @@ body.home {
   background: rgba(0, 0, 0, 0.28);
 }
 
+.apply-closed-badge {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent, #3eb0ff);
+}
+
+.apply-closed .coming-soon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
 .apply-label,
 .checker-label,
 .apply-steps-label,

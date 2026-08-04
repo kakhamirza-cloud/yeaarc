@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARC mfers — Apply MFER WL</title>
+    <title>ARC mfers — Apply MFER WL (closed)</title>
     <meta
       name="description"
-      content="Apply for ARC mfers whitelist. Submit your wallet, follow @Arc_Mfers, then retweet and like."
+      content="ARC mfers whitelist applications are closed. Try the prediction market."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,7 +27,7 @@
       <div class="nav-right">
         <a href="/">home</a>
         <a href="/mint">mint</a>
-        <a href="/apply">apply</a>
+        <a href="/apply" aria-current="page">apply</a>
         <a href="/prediction">prediction</a>
         <a href="/portfolio">portfolio</a>
         <a class="play-btn" href="/game">Play the game</a>
@@ -37,76 +37,23 @@
 
     <main class="apply-page reveal is-in">
       <p class="kicker">whitelist</p>
-      <h1 class="apply-title">Apply MFER WL</h1>
+      <h1 class="apply-title">WL closed</h1>
       <p class="apply-copy">
-        Submit your wallet, follow @arc_mfers, then retweet &amp; like the drop tweet.
-        Make sure to follow and retweet — we will review it one by one.
+        Apply MFER WL is closed. Applications are no longer accepted.
+        You can still check your wallet or try the prediction market.
       </p>
 
-      <form class="apply-card" id="applyForm">
-        <label class="apply-label" for="walletInput">wallet address</label>
-        <input
-          id="walletInput"
-          class="apply-input"
-          type="text"
-          inputmode="text"
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="0x…"
-          maxlength="42"
-          required
-        />
-
-        <label class="apply-label" for="twitterInput">twitter username (optional)</label>
-        <input
-          id="twitterInput"
-          class="apply-input"
-          type="text"
-          autocomplete="username"
-          placeholder="@yourhandle"
-          maxlength="16"
-        />
-
-        <div class="apply-steps">
-          <p class="apply-steps-label">required steps</p>
-          <a
-            class="btn play apply-step-btn"
-            href="https://x.com/Arc_Mfers"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            1. Follow @Arc_Mfers
-          </a>
-          <a
-            class="btn play apply-step-btn"
-            href="https://x.com/Arc_Mfers/status/2080264874618171620?s=20"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            2. Retweet &amp; like the tweet
-          </a>
+      <div class="apply-card apply-closed">
+        <p class="apply-closed-badge">applications closed</p>
+        <p class="apply-copy">Thanks for applying — we imported wallets into the mint whitelist.</p>
+        <div class="coming-soon-actions">
+          <a class="btn primary" href="/checker">Check wallet</a>
+          <a class="btn ghost" href="/prediction">Try prediction</a>
         </div>
-
-        <label class="apply-check">
-          <input id="checkFollow" type="checkbox" required />
-          <span>I followed @Arc_Mfers</span>
-        </label>
-        <label class="apply-check">
-          <input id="checkRtLike" type="checkbox" required />
-          <span>I retweeted and liked the tweet</span>
-        </label>
-
-        <button type="submit" class="btn primary apply-submit" id="btnApply">
-          Submit application
-        </button>
-      </form>
-
-      <div class="apply-result hidden" id="applyResult" role="status" aria-live="polite"></div>
+      </div>
 
       <p class="apply-note">
         <a href="/">← Back to home</a>
-        ·
-        <a href="/checker">Wallet checker</a>
       </p>
     </main>
 
@@ -114,7 +61,5 @@
       <img src="/gallery/420.png" alt="" width="28" height="28" />
       <span>ARC mfers · Arc Chain</span>
     </footer>
-
-    <script type="module" src="/src/apply.js"></script>
   </body>
 </html>
