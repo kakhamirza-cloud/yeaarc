@@ -13,6 +13,7 @@ import { normalizeWallet } from "./game-shared.js";
 export const FAUCET_AMOUNT = 500;
 /** Share reward — once per UTC day only (stops spam / fake infinite shares) */
 export const SHARE_AMOUNT = 100;
+export const LEADERBOARD_TOP = 25;
 export const MARKET_DURATION_MS = 24 * 60 * 60 * 1000;
 export const OPEN_MARKET_COUNT = 3;
 export const DEFAULT_PREDICTION_PASSWORD = "arc-wheel-2026";
@@ -414,6 +415,32 @@ export function publicPlayer(player, wallet, { isMfer = false } = {}) {
   };
 }
 
+export function pointsLeaderboard(state, viewerWallet = null, limit = LEADERBOARD_TOP) {
+  const viewer = normalizeWallet(viewerWallet);
+  const rows = Object.entries(state.players || {})
+    .map(([wallet, p]) => ({
+      wallet,
+      points: Math.max(0, Math.floor(Number(p?.points) || 0)),
+    }))
+    .filter((r) => r.points > 0)
+    .sort((a, b) => b.points - a.points || a.wallet.localeCompare(b.wallet));
+
+  const yourIndex = viewer ? rows.findIndex((r) => r.wallet === viewer) : -1;
+
+  return {
+    playerCount: Object.keys(state.players || {}).length,
+    scoredCount: rows.length,
+    yourRank: yourIndex >= 0 ? yourIndex + 1 : null,
+    yourPoints: yourIndex >= 0 ? rows[yourIndex].points : viewer ? state.players?.[viewer]?.points ?? 0 : null,
+    top: rows.slice(0, limit).map((r, i) => ({
+      rank: i + 1,
+      wallet: r.wallet,
+      points: r.points,
+      you: Boolean(viewer && r.wallet === viewer),
+    })),
+  };
+}
+
 export function snapshotState(state, wallet, extras = {}) {
   const w = normalizeWallet(wallet);
   const opens = ensureOpenMarkets(state);
@@ -428,6 +455,7 @@ export function snapshotState(state, wallet, extras = {}) {
       state.markets.find((m) => m.status === "resolved") || opens[0],
       w
     ),
+    leaderboard: pointsLeaderboard(state, w),
     testToRealRate: TEST_TO_REAL_RATE,
     shareAmount: SHARE_AMOUNT,
     faucetAmount: FAUCET_AMOUNT,

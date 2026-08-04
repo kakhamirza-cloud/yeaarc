@@ -21,6 +21,8 @@ const els = {
   deskNote: document.getElementById("deskNote"),
   marketsList: document.getElementById("marketsList"),
   historyList: document.getElementById("historyList"),
+  lbMeta: document.getElementById("lbMeta"),
+  lbList: document.getElementById("lbList"),
 };
 
 let wallet = localStorage.getItem(WALLET_KEY) || "";
@@ -153,6 +155,30 @@ function renderDesk(data) {
   els.marketsList.innerHTML = markets.length
     ? markets.map(marketCardHtml).join("")
     : `<p class="muted">No open markets.</p>`;
+
+  const lb = data.leaderboard || {};
+  const top = lb.top || [];
+  if (els.lbMeta) {
+    const you =
+      lb.yourRank != null
+        ? ` · you #${lb.yourRank}`
+        : player
+          ? " · you unranked"
+          : "";
+    els.lbMeta.textContent = `${lb.scoredCount ?? 0} with points · ${lb.playerCount ?? 0} players${you}`;
+  }
+  if (els.lbList) {
+    els.lbList.innerHTML = top.length
+      ? top
+          .map(
+            (row) =>
+              `<li class="${row.you ? "is-you" : ""}"><span class="rank">#${row.rank}</span><span class="addr">${shortWallet(
+                row.wallet
+              )}</span><span class="pts">${row.points}</span></li>`
+          )
+          .join("")
+      : `<li class="muted">No scores yet — claim faucet to appear.</li>`;
+  }
 
   const history = player?.history || [];
   els.historyList.innerHTML = history.length

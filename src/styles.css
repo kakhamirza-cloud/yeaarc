@@ -1608,6 +1608,72 @@ body.home {
   margin-top: 1.5rem;
 }
 
+.predict-lb {
+  margin-top: 1.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.predict-lb-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.predict-lb h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.predict-lb-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.predict-lb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.predict-lb-list li {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+.predict-lb-list .rank {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.predict-lb-list .pts {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.predict-lb-list li.is-you {
+  color: var(--accent, #3eb0ff);
+}
+
+.predict-lb-list li.muted {
+  display: block;
+  color: var(--muted);
+  border-bottom: none;
+}
+
 .history-block h3 {
   margin: 0 0 0.65rem;
   font-family: var(--display);
