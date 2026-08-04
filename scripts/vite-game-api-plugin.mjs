@@ -19,6 +19,7 @@ import { isMintWhitelisted } from "../src/mint-whitelist.js";
 import {
   createPredictionState,
   claimFaucet,
+  claimShareReward,
   placeBet,
   ensureOpenMarkets,
   resolveExpiredMarkets,
@@ -30,6 +31,10 @@ const TOP_PUBLIC = 10;
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PREDICTION_FILE = join(ROOT, "data", "prediction-local.json");
 
+function predictionSnap(state, wallet) {
+  const w = normalizeWallet(wallet);
+  return snapshotState(state, w, { isMfer: w ? isMintWhitelisted(w) : false });
+}
 function loadPredictionState() {
   try {
     if (existsSync(PREDICTION_FILE)) {
@@ -329,7 +334,7 @@ export function viteGameApiPlugin() {
         }
 
         // ── Prediction market (local) ──
-        // Password only on /api/prediction/admin — public routes need mint whitelist wallet
+        // Open to any wallet; mint whitelist only gates the shop
         if (url === "/api/prediction/admin") {
           if (req.method === "OPTIONS") return send(res, 200, { ok: true });
           if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
@@ -355,7 +360,7 @@ export function viteGameApiPlugin() {
             savePredictionState(prediction);
             return send(res, 200, {
               ok: true,
-              ...snapshotState(prediction, data?.wallet),
+              ...predictionSnap(prediction, data?.wallet),
               playerCount: Object.keys(prediction.players).length,
               marketCount: prediction.markets.length,
             });
@@ -369,7 +374,7 @@ export function viteGameApiPlugin() {
             return send(res, 200, {
               ok: true,
               reset: true,
-              ...snapshotState(prediction, null),
+              ...predictionSnap(prediction, null),
               playerCount: 0,
               marketCount: prediction.markets.length,
             });
@@ -381,7 +386,7 @@ export function viteGameApiPlugin() {
             return send(res, 200, {
               ok: true,
               publicOpen: prediction.publicOpen,
-              ...snapshotState(prediction, data?.wallet),
+              ...predictionSnap(prediction, data?.wallet),
               playerCount: Object.keys(prediction.players).length,
               marketCount: prediction.markets.length,
             });
@@ -397,20 +402,13 @@ export function viteGameApiPlugin() {
 
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
-          if (!isMintWhitelisted(wallet)) {
-            return send(res, 403, {
-              error: "wallet not on mint whitelist — access denied",
-              whitelisted: false,
-            });
-          }
 
           ensureOpenMarkets(prediction);
           resolveExpiredMarkets(prediction);
           savePredictionState(prediction);
           return send(res, 200, {
             ok: true,
-            whitelisted: true,
-            ...snapshotState(prediction, wallet),
+            ...predictionSnap(prediction, wallet),
           });
         }
 
@@ -422,14 +420,26 @@ export function viteGameApiPlugin() {
 
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
-          if (!isMintWhitelisted(wallet)) {
-            return send(res, 403, { error: "wallet not on mint whitelist" });
-          }
 
           const result = claimFaucet(prediction, wallet);
           if (result.error) return send(res, result.status, { error: result.error });
           savePredictionState(prediction);
-          return send(res, 200, { ...result, ...snapshotState(prediction, wallet) });
+          return send(res, 200, { ...result, ...predictionSnap(prediction, wallet) });
+        }
+
+        if (url === "/api/prediction/share") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+
+          const result = claimShareReward(prediction, wallet);
+          if (result.error) return send(res, result.status, { error: result.error });
+          savePredictionState(prediction);
+          return send(res, 200, { ...result, ...predictionSnap(prediction, wallet) });
         }
 
         if (url === "/api/prediction/bet") {
@@ -440,9 +450,6 @@ export function viteGameApiPlugin() {
 
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
-          if (!isMintWhitelisted(wallet)) {
-            return send(res, 403, { error: "wallet not on mint whitelist" });
-          }
 
           ensureOpenMarkets(prediction);
           const result = placeBet(prediction, {
@@ -453,7 +460,7 @@ export function viteGameApiPlugin() {
           });
           if (result.error) return send(res, result.status, { error: result.error });
           savePredictionState(prediction);
-          return send(res, 200, { ...result, ...snapshotState(prediction, wallet) });
+          return send(res, 200, { ...result, ...predictionSnap(prediction, wallet) });
         }
 
         if (url === "/api/prediction/state") {
@@ -464,14 +471,11 @@ export function viteGameApiPlugin() {
 
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
-          if (!isMintWhitelisted(wallet)) {
-            return send(res, 403, { error: "wallet not on mint whitelist" });
-          }
 
           ensureOpenMarkets(prediction);
           resolveExpiredMarkets(prediction);
           savePredictionState(prediction);
-          return send(res, 200, snapshotState(prediction, wallet));
+          return send(res, 200, predictionSnap(prediction, wallet));
         }
 
         next();

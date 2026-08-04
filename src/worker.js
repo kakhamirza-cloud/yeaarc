@@ -15,6 +15,7 @@ import { isMintWhitelisted } from "./mint-whitelist.js";
 import {
   createPredictionState,
   claimFaucet,
+  claimShareReward,
   placeBet,
   ensureOpenMarkets,
   resolveExpiredMarkets,
@@ -421,13 +422,15 @@ async function handleWheel(request, env, pathname) {
   return json({ error: "method not allowed" }, 405);
 }
 
-async function requireWhitelistedWallet(body) {
+async function requirePredictionWallet(body) {
   const wallet = normalizeWallet(body?.wallet);
   if (!wallet) return { error: "valid wallet address required (0x…)", status: 400 };
-  if (!isMintWhitelisted(wallet)) {
-    return { error: "wallet not on mint whitelist — access denied", status: 403, wallet };
-  }
-  return { wallet };
+  // Prediction desk is open to everyone; mint whitelist only unlocks the shop
+  return { wallet, isMfer: isMintWhitelisted(wallet) };
+}
+
+function predictionSnap(state, wallet, isMfer) {
+  return snapshotState(state, wallet, { isMfer: Boolean(isMfer) });
 }
 
 async function handlePrediction(request, env, pathname) {
@@ -457,7 +460,7 @@ async function handlePrediction(request, env, pathname) {
       await writePrediction(env, prediction);
       return json({
         ok: true,
-        ...snapshotState(prediction, body?.wallet),
+        ...predictionSnap(prediction, body?.wallet, false),
         playerCount: Object.keys(prediction.players).length,
         marketCount: prediction.markets.length,
       });
@@ -469,13 +472,12 @@ async function handlePrediction(request, env, pathname) {
       return json({
         ok: true,
         publicOpen: prediction.publicOpen,
-        ...snapshotState(prediction, body?.wallet),
+        ...predictionSnap(prediction, body?.wallet, false),
         playerCount: Object.keys(prediction.players).length,
         marketCount: prediction.markets.length,
       });
     }
     if (action === "reset") {
-      // Wipe desk for a clean public test
       const fresh = createPredictionState({
         adminPassword: prediction.adminPassword,
       });
@@ -484,7 +486,7 @@ async function handlePrediction(request, env, pathname) {
       return json({
         ok: true,
         reset: true,
-        ...snapshotState(fresh, null),
+        ...predictionSnap(fresh, null, false),
         playerCount: 0,
         marketCount: fresh.markets.length,
       });
@@ -493,31 +495,41 @@ async function handlePrediction(request, env, pathname) {
   }
 
   if (pathname === "/api/prediction/enter") {
-    const gate = await requireWhitelistedWallet(body);
-    if (gate.error) return json({ error: gate.error, whitelisted: false }, gate.status);
+    const gate = await requirePredictionWallet(body);
+    if (gate.error) return json({ error: gate.error }, gate.status);
     const prediction = await readPrediction(env);
     ensureOpenMarkets(prediction);
     resolveExpiredMarkets(prediction);
     await writePrediction(env, prediction);
     return json({
       ok: true,
-      whitelisted: true,
-      ...snapshotState(prediction, gate.wallet),
+      ...predictionSnap(prediction, gate.wallet, gate.isMfer),
     });
   }
 
   if (pathname === "/api/prediction/faucet") {
-    const gate = await requireWhitelistedWallet(body);
+    const gate = await requirePredictionWallet(body);
     if (gate.error) return json({ error: gate.error }, gate.status);
     const prediction = await readPrediction(env);
     const result = claimFaucet(prediction, gate.wallet);
     if (result.error) return json({ error: result.error }, result.status);
     await writePrediction(env, prediction);
-    return json({ ...result, ...snapshotState(prediction, gate.wallet) });
+    return json({ ...result, ...predictionSnap(prediction, gate.wallet, gate.isMfer) });
+  }
+
+  if (pathname === "/api/prediction/share") {
+    const gate = await requirePredictionWallet(body);
+    if (gate.error) return json({ error: gate.error }, gate.status);
+    const prediction = await readPrediction(env);
+    // Points amount is never taken from the client — daily server cap only
+    const result = claimShareReward(prediction, gate.wallet);
+    if (result.error) return json({ error: result.error }, result.status);
+    await writePrediction(env, prediction);
+    return json({ ...result, ...predictionSnap(prediction, gate.wallet, gate.isMfer) });
   }
 
   if (pathname === "/api/prediction/bet") {
-    const gate = await requireWhitelistedWallet(body);
+    const gate = await requirePredictionWallet(body);
     if (gate.error) return json({ error: gate.error }, gate.status);
     const prediction = await readPrediction(env);
     ensureOpenMarkets(prediction);
@@ -529,17 +541,17 @@ async function handlePrediction(request, env, pathname) {
     });
     if (result.error) return json({ error: result.error }, result.status);
     await writePrediction(env, prediction);
-    return json({ ...result, ...snapshotState(prediction, gate.wallet) });
+    return json({ ...result, ...predictionSnap(prediction, gate.wallet, gate.isMfer) });
   }
 
   if (pathname === "/api/prediction/state") {
-    const gate = await requireWhitelistedWallet(body);
+    const gate = await requirePredictionWallet(body);
     if (gate.error) return json({ error: gate.error }, gate.status);
     const prediction = await readPrediction(env);
     ensureOpenMarkets(prediction);
     resolveExpiredMarkets(prediction);
     await writePrediction(env, prediction);
-    return json(snapshotState(prediction, gate.wallet));
+    return json(predictionSnap(prediction, gate.wallet, gate.isMfer));
   }
 
   return json({ error: "not found" }, 404);

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ARC mfers — predictions</title>
-    <meta name="description" content="Local test prediction markets for mint-whitelisted wallets." />
+    <meta name="description" content="Open testing for the ARC mfers prediction market. Farm points, share, and play." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -34,9 +34,9 @@
 
     <main class="predict-page reveal is-in">
       <section class="predict-card" id="walletPanel">
-        <p class="kicker">mint whitelist</p>
+        <p class="kicker">open test</p>
         <h1 class="predict-title">wallet</h1>
-        <p class="predict-lead">Paste a mint-whitelisted wallet to enter.</p>
+        <p class="predict-lead">Paste any wallet to enter the prediction desk.</p>
         <form class="predict-form" id="enterForm">
           <label class="apply-label" for="walletInput">wallet address</label>
           <input
@@ -72,7 +72,7 @@
 
         <div class="predict-actions">
           <button type="button" class="btn play" id="btnFaucet">Claim faucet (+500)</button>
-          <button type="button" class="btn ghost" id="btnBuy">Buy</button>
+          <button type="button" class="btn ghost" id="btnBuy">Shop</button>
           <button type="button" class="btn ghost" id="btnShare">Share with a friend</button>
           <button type="button" class="btn ghost" id="btnRefresh">Refresh</button>
           <button type="button" class="btn ghost" id="btnLogout">Switch wallet</button>
@@ -81,8 +81,8 @@
 
         <div class="buy-soon hidden" id="buySoon" role="status">
           <p class="kicker">shop</p>
-          <h2 class="predict-title">coming soon</h2>
-          <p>You can buy here with points.</p>
+          <h2 class="predict-title" id="shopTitle">coming soon</h2>
+          <p id="shopBody">Spend points on rewards. Shop unlocks for ARC mfers only.</p>
           <button type="button" class="btn ghost" id="btnBuyClose">Close</button>
         </div>
 
@@ -92,12 +92,47 @@
           <h3>recent results</h3>
           <ul class="history-list" id="historyList"></ul>
         </section>
+
+        <section class="predict-faq" id="faqPanel">
+          <h3>how it works</h3>
+          <details open>
+            <summary>Quick start</summary>
+            <ol>
+              <li>Enter with any wallet.</li>
+              <li>Claim the daily faucet (+500 test points).</li>
+              <li>Pick Yes or No on a market — one bet per market.</li>
+              <li>Wrong side = 0. Right side shares the pool.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Farm points</summary>
+            <p>
+              Test points are for this desk. Later they convert to real points at about
+              <strong id="faqRate">100:1</strong> (100 test → 1 real — final rate TBA).
+              Farm now so you’re ready when rewards go live.
+            </p>
+          </details>
+          <details>
+            <summary>Want more points?</summary>
+            <p>
+              Share with a friend (opens a tweet). You get a share bonus
+              <strong>once per day</strong> — spam clicks won’t stack.
+            </p>
+          </details>
+          <details>
+            <summary>Shop</summary>
+            <p>
+              The shop is for <strong>ARC mfers only</strong>. Everyone can play the
+              prediction markets; holders unlock the points shop later.
+            </p>
+          </details>
+        </section>
       </section>
     </main>
 
     <footer class="footer">
       <img src="/gallery/420.png" alt="" width="28" height="28" />
-      <span>ARC mfers · Arc Chain · local test</span>
+      <span>ARC mfers · Arc Chain</span>
     </footer>
 
     <script type="module" src="/src/prediction.js"></script>

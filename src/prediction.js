@@ -12,6 +12,8 @@ const els = {
   btnBuy: document.getElementById("btnBuy"),
   btnBuyClose: document.getElementById("btnBuyClose"),
   buySoon: document.getElementById("buySoon"),
+  shopTitle: document.getElementById("shopTitle"),
+  shopBody: document.getElementById("shopBody"),
   btnShare: document.getElementById("btnShare"),
   btnShareWallet: document.getElementById("btnShareWallet"),
   btnRefresh: document.getElementById("btnRefresh"),
@@ -19,9 +21,12 @@ const els = {
   deskNote: document.getElementById("deskNote"),
   marketsList: document.getElementById("marketsList"),
   historyList: document.getElementById("historyList"),
+  faqRate: document.getElementById("faqRate"),
 };
 
 let wallet = localStorage.getItem(WALLET_KEY) || "";
+let shopOpen = false;
+let shareAmount = 100;
 
 function show(panel) {
   els.walletPanel.classList.toggle("hidden", panel !== "wallet");
@@ -39,13 +44,12 @@ function shareUrl() {
   return `${window.location.origin}/prediction`;
 }
 
-function tweetWithFriend(noteEl) {
+function openInviteTweet() {
   const text = "Come try the prediction market from ARC mfers";
   const intent = new URL("https://twitter.com/intent/tweet");
   intent.searchParams.set("text", text);
   intent.searchParams.set("url", shareUrl());
   window.open(intent.toString(), "_blank", "noopener,noreferrer");
-  note(noteEl, "Opening share…", true);
 }
 
 async function api(path, body) {
@@ -131,6 +135,11 @@ function renderDesk(data) {
     ? data.openMarkets
     : (data.markets || []).filter((m) => m.status === "open").slice(0, 3);
 
+  const rate = data.testToRealRate || player?.testToRealRate || 100;
+  if (els.faqRate) els.faqRate.textContent = `${rate}:1`;
+  shareAmount = player?.shareAmount || data.shareAmount || 100;
+  shopOpen = Boolean(player?.shopOpen || player?.isMfer);
+
   if (player) {
     els.pointsLabel.textContent = String(player.points ?? 0);
     els.walletLabel.textContent = shortWallet(player.wallet);
@@ -138,6 +147,10 @@ function renderDesk(data) {
     els.btnFaucet.textContent = player.canFaucet
       ? `Claim faucet (+${player.faucetAmount || 500})`
       : "Faucet claimed today";
+    els.btnShare.disabled = false;
+    els.btnShare.textContent = player.canShare
+      ? `Share with a friend (+${shareAmount})`
+      : "Share bonus claimed today";
   }
 
   els.marketsList.innerHTML = markets.length
@@ -173,6 +186,23 @@ async function enterDesk() {
   note(els.deskNote, "", true);
 }
 
+async function shareAndReward(noteEl, grantPoints) {
+  openInviteTweet();
+  if (!grantPoints || !wallet) {
+    note(noteEl, "Opening share…", true);
+    return;
+  }
+  note(noteEl, "…");
+  try {
+    const data = await api("/api/prediction/share", { wallet });
+    renderDesk(data);
+    note(noteEl, `Shared · +${data.granted} points`, true);
+  } catch (err) {
+    // Still opened the tweet; bonus may already be claimed today
+    note(noteEl, err.message || "Share opened (bonus already used today)");
+  }
+}
+
 els.enterForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   note(els.enterNote, "…");
@@ -181,7 +211,7 @@ els.enterForm.addEventListener("submit", async (e) => {
     await enterDesk();
     note(els.enterNote, "");
   } catch (err) {
-    note(els.enterNote, err.message || "Access denied");
+    note(els.enterNote, err.message || "Could not enter");
   }
 });
 
@@ -197,6 +227,15 @@ els.btnFaucet.addEventListener("click", async () => {
 });
 
 els.btnBuy.addEventListener("click", () => {
+  if (shopOpen) {
+    els.shopTitle.textContent = "coming soon";
+    els.shopBody.textContent =
+      "ARC mfer shop unlocked for you. Spend points on rewards here soon.";
+  } else {
+    els.shopTitle.textContent = "holders only";
+    els.shopBody.textContent =
+      "Shop is for ARC mfers only. Anyone can play predictions — holders unlock the shop.";
+  }
   els.buySoon.classList.remove("hidden");
 });
 
@@ -204,8 +243,8 @@ els.btnBuyClose.addEventListener("click", () => {
   els.buySoon.classList.add("hidden");
 });
 
-els.btnShare?.addEventListener("click", () => tweetWithFriend(els.deskNote));
-els.btnShareWallet?.addEventListener("click", () => tweetWithFriend(els.enterNote));
+els.btnShare?.addEventListener("click", () => shareAndReward(els.deskNote, true));
+els.btnShareWallet?.addEventListener("click", () => shareAndReward(els.enterNote, false));
 
 els.btnRefresh.addEventListener("click", async () => {
   try {
@@ -219,6 +258,7 @@ els.btnRefresh.addEventListener("click", async () => {
 
 els.btnLogout.addEventListener("click", () => {
   wallet = "";
+  shopOpen = false;
   localStorage.removeItem(WALLET_KEY);
   els.buySoon.classList.add("hidden");
   show("wallet");
@@ -248,7 +288,6 @@ els.marketsList.addEventListener("submit", async (e) => {
 });
 
 async function boot() {
-  // Always start on the wallet form — don't auto-enter from a saved address
   show("wallet");
   if (wallet) els.walletInput.value = wallet;
 }

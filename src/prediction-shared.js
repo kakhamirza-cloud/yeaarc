@@ -11,6 +11,8 @@
 import { normalizeWallet } from "./game-shared.js";
 
 export const FAUCET_AMOUNT = 500;
+/** Share reward — once per UTC day only (stops spam / fake infinite shares) */
+export const SHARE_AMOUNT = 100;
 export const MARKET_DURATION_MS = 24 * 60 * 60 * 1000;
 export const OPEN_MARKET_COUNT = 3;
 export const DEFAULT_PREDICTION_PASSWORD = "arc-wheel-2026";
@@ -18,6 +20,11 @@ export const DEFAULT_PREDICTION_PASSWORD = "arc-wheel-2026";
 export const MAX_BET_AMOUNT = 2000;
 /** Soft cap on wallet balance so a bad write can't explode points forever */
 export const MAX_POINTS_BALANCE = 50_000;
+/**
+ * Planned later conversion: test points → real points.
+ * Example messaging: 100 test pts = 1 real pt (final rate TBA).
+ */
+export const TEST_TO_REAL_RATE = 100;
 
 const QUESTIONS = [
   (y) => `Will BTC close above $95,000 on ${fmtDate(addDays(0))} (${y})?`,
@@ -67,6 +74,7 @@ export function ensurePlayer(state, wallet) {
     state.players[w] = {
       points: 0,
       lastFaucetDay: null,
+      lastShareDay: null,
       history: [],
     };
   }
@@ -75,6 +83,7 @@ export function ensurePlayer(state, wallet) {
   if (!Number.isFinite(p.points) || p.points < 0) p.points = 0;
   if (p.points > MAX_POINTS_BALANCE) p.points = MAX_POINTS_BALANCE;
   if (!Array.isArray(p.history)) p.history = [];
+  if (p.lastShareDay === undefined) p.lastShareDay = null;
   return p;
 }
 
@@ -93,6 +102,31 @@ export function claimFaucet(state, wallet, now = Date.now()) {
   return {
     ok: true,
     granted: FAUCET_AMOUNT,
+    points: player.points,
+    nextDay: day,
+  };
+}
+
+/**
+ * Share reward — server grants at most once per UTC day.
+ * Client cannot pass a points amount; opening tweet intent is soft-trust,
+ * but the daily cap blocks farming 9999999 via spam clicks.
+ */
+export function claimShareReward(state, wallet, now = Date.now()) {
+  const w = normalizeWallet(wallet);
+  const player = ensurePlayer(state, w);
+  if (!player) return { error: "valid wallet required", status: 400 };
+
+  const day = utcDayKey(now);
+  if (player.lastShareDay === day) {
+    return { error: "share bonus already claimed today — come back tomorrow", status: 400 };
+  }
+
+  player.lastShareDay = day;
+  player.points = Math.min(MAX_POINTS_BALANCE, player.points + SHARE_AMOUNT);
+  return {
+    ok: true,
+    granted: SHARE_AMOUNT,
     points: player.points,
     nextDay: day,
   };
@@ -346,28 +380,47 @@ export function publicMarket(market, wallet = null) {
   };
 }
 
-export function publicPlayer(player, wallet) {
-  if (!player) {
-    return { wallet, points: 0, lastFaucetDay: null, canFaucet: true, history: [] };
-  }
+export function publicPlayer(player, wallet, { isMfer = false } = {}) {
   const day = utcDayKey();
+  if (!player) {
+    return {
+      wallet,
+      points: 0,
+      lastFaucetDay: null,
+      lastShareDay: null,
+      canFaucet: true,
+      canShare: true,
+      faucetAmount: FAUCET_AMOUNT,
+      shareAmount: SHARE_AMOUNT,
+      isMfer: Boolean(isMfer),
+      shopOpen: Boolean(isMfer),
+      testToRealRate: TEST_TO_REAL_RATE,
+      history: [],
+    };
+  }
   return {
     wallet,
     points: player.points,
     lastFaucetDay: player.lastFaucetDay,
+    lastShareDay: player.lastShareDay || null,
     canFaucet: player.lastFaucetDay !== day,
+    canShare: player.lastShareDay !== day,
     faucetAmount: FAUCET_AMOUNT,
+    shareAmount: SHARE_AMOUNT,
+    isMfer: Boolean(isMfer),
+    shopOpen: Boolean(isMfer),
+    testToRealRate: TEST_TO_REAL_RATE,
     history: player.history || [],
   };
 }
 
-export function snapshotState(state, wallet) {
+export function snapshotState(state, wallet, extras = {}) {
   const w = normalizeWallet(wallet);
   const opens = ensureOpenMarkets(state);
   const player = w ? ensurePlayer(state, w) : null;
   return {
     publicOpen: state.publicOpen,
-    player: w ? publicPlayer(player, w) : null,
+    player: w ? publicPlayer(player, w, extras) : null,
     openMarkets: opens.map((m) => publicMarket(m, w)),
     openMarket: publicMarket(opens[0] || createMarket(state), w),
     markets: state.markets.map((m) => publicMarket(m, w)),
@@ -375,5 +428,8 @@ export function snapshotState(state, wallet) {
       state.markets.find((m) => m.status === "resolved") || opens[0],
       w
     ),
+    testToRealRate: TEST_TO_REAL_RATE,
+    shareAmount: SHARE_AMOUNT,
+    faucetAmount: FAUCET_AMOUNT,
   };
 }

@@ -1608,6 +1608,57 @@ body.home {
   border-top: 1px solid var(--line);
 }
 
+.predict-faq {
+  margin-top: 1.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.predict-faq h3 {
+  margin: 0 0 0.75rem;
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.predict-faq details {
+  margin-bottom: 0.55rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.predict-faq summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.predict-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.predict-faq summary::before {
+  content: "+ ";
+  color: var(--accent, #3eb0ff);
+}
+
+.predict-faq details[open] summary::before {
+  content: "– ";
+}
+
+.predict-faq p,
+.predict-faq ol {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.predict-faq ol {
+  padding-left: 1.15rem;
+}
+
 .history-list li {
   padding: 0.7rem 0;
   border-bottom: 1px solid var(--line);
