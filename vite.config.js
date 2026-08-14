@@ -21,6 +21,7 @@ export default defineConfig({
         checker: resolve(root, "checker.html"),
         prediction: resolve(root, "prediction.html"),
         "prediction-admin": resolve(root, "prediction-admin.html"),
+        stake: resolve(root, "stake.html"),
         portfolio: resolve(root, "portfolio.html"),
         apply: resolve(root, "apply.html"),
         "apply-admin": resolve(root, "apply-admin.html"),

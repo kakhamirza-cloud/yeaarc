@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC mfers — stake coming soon</title>
+    <meta
+      name="description"
+      content="Soft lock your points. Earn while Arc warms up. Coming soon."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="stake-body">
+    <div class="atmosphere stake-atmosphere" aria-hidden="true">
+      <div class="wash"></div>
+      <div class="stake-beam"></div>
+      <div class="stake-grid"></div>
+      <div class="grain"></div>
+    </div>
+
+    <header class="nav">
+      <a class="brand" href="/">arc<span>_mfers</span></a>
+      <div class="nav-right">
+        <a href="/">home</a>
+        <a href="/prediction">prediction</a>
+        <a href="/stake" aria-current="page">stake</a>
+        <a href="/mint">mint</a>
+        <a href="/portfolio">portfolio</a>
+        <a class="play-btn" href="/game">Play the game</a>
+      </div>
+    </header>
+
+    <main class="stake-page">
+      <section class="stake-gate reveal is-in" id="gatePanel">
+        <div class="stake-gate-visual" aria-hidden="true">
+          <div class="stake-ring stake-ring-a"></div>
+          <div class="stake-ring stake-ring-b"></div>
+          <div class="stake-ring stake-ring-c"></div>
+          <img class="stake-mfer" src="/gallery/420.png" alt="" width="180" height="180" />
+        </div>
+        <div class="stake-gate-copy">
+          <p class="stake-eyebrow" id="gateEyebrow">coming soon</p>
+          <h1 class="stake-mega">stake</h1>
+          <p class="stake-sub">soft lock your points. earn while arc warms up.</p>
+
+          <div id="soonCopy">
+            <div class="stake-soon-actions">
+              <a class="stake-cta" href="/prediction">farm prediction</a>
+              <a
+                class="btn ghost"
+                href="https://x.com/Arc_Mfers"
+                target="_blank"
+                rel="noopener noreferrer"
+              >notify on x</a>
+            </div>
+          </div>
+
+          <div class="hidden" id="walletPanel">
+            <form class="stake-enter" id="enterForm">
+              <label class="sr-only" for="walletInput">wallet</label>
+              <input
+                id="walletInput"
+                class="stake-input"
+                type="text"
+                inputmode="text"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="paste wallet 0x…"
+                maxlength="42"
+                required
+              />
+              <button type="submit" class="stake-cta" id="btnEnter">enter the vault</button>
+            </form>
+            <p class="predict-note" id="enterNote"></p>
+            <p class="stake-aside">
+              need points? <a href="/prediction">farm prediction first →</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DESK -->
+      <section class="stake-vault hidden reveal is-in" id="deskPanel">
+        <div class="stake-vault-stage">
+          <div class="stake-dial" aria-hidden="true">
+            <svg class="stake-dial-svg" viewBox="0 0 120 120">
+              <circle class="stake-dial-track" cx="60" cy="60" r="52" />
+              <circle class="stake-dial-fill" id="dialFill" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="stake-dial-core">
+              <img src="/gallery/69.png" alt="" width="72" height="72" />
+              <p class="stake-dial-apr" id="aprBadge">5%/day</p>
+            </div>
+          </div>
+
+          <div class="stake-vault-copy">
+            <p class="stake-eyebrow">soft vault · live tick</p>
+            <h2 class="stake-mega stake-mega-sm">your pool</h2>
+            <p class="stake-wallet-line">
+              <span id="walletLabel">—</span>
+              <button type="button" class="stake-text-btn" id="btnLogout">switch</button>
+            </p>
+            <p class="stake-yield-line">
+              est. +<strong id="tickLabel">0.0000</strong>
+              <span>/sec while staked</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="stake-meters" aria-label="Balances">
+          <div class="stake-meter">
+            <span>available</span>
+            <strong id="availLabel">0</strong>
+            <i class="stake-meter-bar" id="availBar"></i>
+          </div>
+          <div class="stake-meter is-hot">
+            <span>staked</span>
+            <strong id="stakedLabel">0</strong>
+            <i class="stake-meter-bar" id="stakedBar"></i>
+          </div>
+          <div class="stake-meter is-reward">
+            <span>rewards</span>
+            <strong id="rewardLabel">0</strong>
+            <i class="stake-meter-bar" id="rewardBar"></i>
+          </div>
+        </div>
+
+        <div class="stake-console">
+          <div class="stake-mode" role="tablist" aria-label="Stake mode">
+            <button type="button" class="stake-mode-btn is-on" data-mode="stake" id="modeStake">
+              stake
+            </button>
+            <button type="button" class="stake-mode-btn" data-mode="unstake" id="modeUnstake">
+              unstake
+            </button>
+          </div>
+
+          <form class="stake-form" id="stakeForm">
+            <div class="stake-amount-row">
+              <input
+                id="stakeAmount"
+                class="stake-input"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="0"
+                required
+              />
+              <button type="button" class="stake-max" id="btnMax">MAX</button>
+            </div>
+            <div class="stake-quick" id="quickAmounts" aria-label="Quick amounts">
+              <button type="button" data-pct="25">25%</button>
+              <button type="button" data-pct="50">50%</button>
+              <button type="button" data-pct="75">75%</button>
+              <button type="button" data-pct="100">100%</button>
+            </div>
+            <button type="submit" class="stake-cta" id="btnAction">stake points</button>
+          </form>
+
+          <button type="button" class="stake-claim" id="btnClaim">
+            <span>claim rewards</span>
+            <strong id="claimHint">+0</strong>
+          </button>
+
+          <p class="predict-note" id="deskNote"></p>
+
+          <div class="stake-foot-actions">
+            <a href="/prediction">← prediction</a>
+            <button type="button" id="btnRefresh">refresh</button>
+          </div>
+        </div>
+
+        <section class="stake-strip" aria-label="How it works">
+          <div>
+            <em>01</em>
+            <p>farm points on prediction</p>
+          </div>
+          <div>
+            <em>02</em>
+            <p>soft stake here · 5%/day</p>
+          </div>
+          <div>
+            <em>03</em>
+            <p>claim anytime · flexible</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <img src="/gallery/420.png" alt="" width="28" height="28" />
+      <span>ARC mfers · soft stake · Arc Chain</span>
+    </footer>
+
+    <script type="module" src="/src/stake.js"></script>
+  </body>
+</html>

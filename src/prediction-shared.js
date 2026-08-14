@@ -26,6 +26,10 @@ export const MAX_POINTS_BALANCE = 50_000;
  * Rate not decided yet — UI shows xxx:1 / TBA.
  */
 export const TEST_TO_REAL_RATE = null;
+/** Soft stake APR on locked test points (not on-chain) */
+export const SOFT_STAKE_APR_DAILY = 0.05; // 5% per day
+export const SOFT_STAKE_APR_LABEL = "5%/day";
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const QUESTIONS = [
   (ctx) => `Will BTC close above $95,000 on ${fmtDate(ctx.closeDay)}?`,
@@ -77,6 +81,9 @@ export function ensurePlayer(state, wallet) {
   if (!state.players[w]) {
     state.players[w] = {
       points: 0,
+      staked: 0,
+      stakeRewards: 0,
+      stakeUpdatedAt: null,
       lastFaucetDay: null,
       lastShareDay: null,
       history: [],
@@ -86,9 +93,83 @@ export function ensurePlayer(state, wallet) {
   const p = state.players[w];
   if (!Number.isFinite(p.points) || p.points < 0) p.points = 0;
   if (p.points > MAX_POINTS_BALANCE) p.points = MAX_POINTS_BALANCE;
+  if (!Number.isFinite(p.staked) || p.staked < 0) p.staked = 0;
+  if (!Number.isFinite(p.stakeRewards) || p.stakeRewards < 0) p.stakeRewards = 0;
+  if (p.stakeUpdatedAt == null) p.stakeUpdatedAt = null;
   if (!Array.isArray(p.history)) p.history = [];
   if (p.lastShareDay === undefined) p.lastShareDay = null;
   return p;
+}
+
+/** Accrue soft yield on staked points since last update (server-side only). */
+export function accrueStake(player, now = Date.now()) {
+  if (!player || !player.staked || player.staked <= 0) {
+    if (player) player.stakeUpdatedAt = now;
+    return 0;
+  }
+  const last = player.stakeUpdatedAt || now;
+  const elapsed = Math.max(0, now - last);
+  if (elapsed <= 0) return 0;
+  const gained = player.staked * SOFT_STAKE_APR_DAILY * (elapsed / MS_PER_DAY);
+  player.stakeRewards = (player.stakeRewards || 0) + gained;
+  player.stakeUpdatedAt = now;
+  return gained;
+}
+
+export function stakePoints(state, wallet, amount, now = Date.now()) {
+  const w = normalizeWallet(wallet);
+  const player = ensurePlayer(state, w);
+  if (!player) return { error: "valid wallet required", status: 400 };
+
+  accrueStake(player, now);
+  const amt = Math.floor(Number(amount));
+  if (!Number.isFinite(amt) || amt < 1) {
+    return { error: "invalid stake amount", status: 400 };
+  }
+  if (player.points < amt) {
+    return { error: "not enough available points — farm on /prediction first", status: 400 };
+  }
+
+  player.points -= amt;
+  player.staked += amt;
+  player.stakeUpdatedAt = now;
+  return { ok: true, staked: amt, points: player.points, totalStaked: player.staked };
+}
+
+export function unstakePoints(state, wallet, amount, now = Date.now()) {
+  const w = normalizeWallet(wallet);
+  const player = ensurePlayer(state, w);
+  if (!player) return { error: "valid wallet required", status: 400 };
+
+  accrueStake(player, now);
+  const amt = Math.floor(Number(amount));
+  if (!Number.isFinite(amt) || amt < 1) {
+    return { error: "invalid unstake amount", status: 400 };
+  }
+  if (player.staked < amt) {
+    return { error: "not enough staked points", status: 400 };
+  }
+
+  player.staked -= amt;
+  player.points = Math.min(MAX_POINTS_BALANCE, player.points + amt);
+  player.stakeUpdatedAt = now;
+  return { ok: true, unstaked: amt, points: player.points, totalStaked: player.staked };
+}
+
+export function claimStakeRewards(state, wallet, now = Date.now()) {
+  const w = normalizeWallet(wallet);
+  const player = ensurePlayer(state, w);
+  if (!player) return { error: "valid wallet required", status: 400 };
+
+  accrueStake(player, now);
+  const reward = Math.floor(player.stakeRewards || 0);
+  if (reward < 1) {
+    return { error: "no rewards to claim yet — keep staking", status: 400 };
+  }
+
+  player.stakeRewards -= reward;
+  player.points = Math.min(MAX_POINTS_BALANCE, player.points + reward);
+  return { ok: true, claimed: reward, points: player.points, pending: player.stakeRewards };
 }
 
 export function claimFaucet(state, wallet, now = Date.now()) {
@@ -386,16 +467,22 @@ export function publicMarket(market, wallet = null) {
 
 export function publicPlayer(player, wallet, { isMfer = false } = {}) {
   const day = utcDayKey();
+  if (player) accrueStake(player);
+
   if (!player) {
     return {
       wallet,
       points: 0,
+      staked: 0,
+      stakeRewards: 0,
       lastFaucetDay: null,
       lastShareDay: null,
       canFaucet: true,
       canShare: true,
       faucetAmount: FAUCET_AMOUNT,
       shareAmount: SHARE_AMOUNT,
+      softAprDaily: SOFT_STAKE_APR_DAILY,
+      softAprLabel: SOFT_STAKE_APR_LABEL,
       isMfer: Boolean(isMfer),
       shopOpen: Boolean(isMfer),
       testToRealRate: TEST_TO_REAL_RATE,
@@ -405,12 +492,16 @@ export function publicPlayer(player, wallet, { isMfer = false } = {}) {
   return {
     wallet,
     points: player.points,
+    staked: Math.floor(player.staked || 0),
+    stakeRewards: Math.floor(player.stakeRewards || 0),
     lastFaucetDay: player.lastFaucetDay,
     lastShareDay: player.lastShareDay || null,
     canFaucet: player.lastFaucetDay !== day,
     canShare: player.lastShareDay !== day,
     faucetAmount: FAUCET_AMOUNT,
     shareAmount: SHARE_AMOUNT,
+    softAprDaily: SOFT_STAKE_APR_DAILY,
+    softAprLabel: SOFT_STAKE_APR_LABEL,
     isMfer: Boolean(isMfer),
     shopOpen: Boolean(isMfer),
     testToRealRate: TEST_TO_REAL_RATE,

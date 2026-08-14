@@ -25,6 +25,10 @@ import {
   resolveExpiredMarkets,
   forceResolveOpenMarket,
   snapshotState,
+  stakePoints,
+  unstakePoints,
+  claimStakeRewards,
+  SOFT_STAKE_APR_LABEL,
 } from "../src/prediction-shared.js";
 
 const TOP_PUBLIC = 10;
@@ -453,6 +457,73 @@ export function viteGameApiPlugin() {
           resolveExpiredMarkets(prediction);
           savePredictionState(prediction);
           return send(res, 200, predictionSnap(prediction, wallet));
+        }
+
+        // ── Soft stake (local) — same points ledger as prediction ──
+        if (url === "/api/stake/enter" || url === "/api/stake/state") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          savePredictionState(prediction);
+          return send(res, 200, {
+            ok: true,
+            softAprLabel: SOFT_STAKE_APR_LABEL,
+            ...predictionSnap(prediction, wallet),
+          });
+        }
+
+        if (url === "/api/stake/stake") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          const result = stakePoints(prediction, wallet, data?.amount);
+          if (result.error) return send(res, result.status, { error: result.error });
+          savePredictionState(prediction);
+          return send(res, 200, {
+            ...result,
+            softAprLabel: SOFT_STAKE_APR_LABEL,
+            ...predictionSnap(prediction, wallet),
+          });
+        }
+
+        if (url === "/api/stake/unstake") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          const result = unstakePoints(prediction, wallet, data?.amount);
+          if (result.error) return send(res, result.status, { error: result.error });
+          savePredictionState(prediction);
+          return send(res, 200, {
+            ...result,
+            softAprLabel: SOFT_STAKE_APR_LABEL,
+            ...predictionSnap(prediction, wallet),
+          });
+        }
+
+        if (url === "/api/stake/claim") {
+          if (req.method === "OPTIONS") return send(res, 200, { ok: true });
+          if (req.method !== "POST") return send(res, 405, { error: "method not allowed" });
+          const data = await readBody(req);
+          if (!data) return send(res, 400, { error: "bad json" });
+          const wallet = normalizeWallet(data?.wallet);
+          if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          const result = claimStakeRewards(prediction, wallet);
+          if (result.error) return send(res, result.status, { error: result.error });
+          savePredictionState(prediction);
+          return send(res, 200, {
+            ...result,
+            softAprLabel: SOFT_STAKE_APR_LABEL,
+            ...predictionSnap(prediction, wallet),
+          });
         }
 
         next();

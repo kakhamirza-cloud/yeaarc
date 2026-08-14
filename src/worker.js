@@ -524,6 +524,12 @@ async function handlePrediction(request, env, pathname) {
   return json({ error: "not found" }, 404);
 }
 
+async function handleStake(request) {
+  if (request.method === "OPTIONS") return json({ ok: true });
+  // Soft stake stays local until we flip it live.
+  return json({ error: "soft stake coming soon" }, 503);
+}
+
 function rewriteAssetPath(pathname) {
   if (pathname === "/mint" || pathname === "/mint/") return "/mint.html";
   if (pathname === "/game" || pathname === "/game/") return "/game.html";
@@ -531,6 +537,7 @@ function rewriteAssetPath(pathname) {
   if (pathname === "/checker" || pathname === "/checker/") return "/checker.html";
   if (pathname === "/prediction" || pathname === "/prediction/") return "/prediction.html";
   if (pathname === "/prediction-admin" || pathname === "/prediction-admin/") return "/prediction-admin.html";
+  if (pathname === "/stake" || pathname === "/stake/") return "/stake.html";
   if (pathname === "/portfolio" || pathname === "/portfolio/") return "/portfolio.html";
   if (pathname === "/apply" || pathname === "/apply/") return "/apply.html";
   if (pathname === "/apply-admin" || pathname === "/apply-admin/") return "/apply-admin.html";
@@ -548,6 +555,7 @@ export default {
     if (pathname === "/api/leaderboard") return handleLeaderboard(request, env);
     if (pathname.startsWith("/api/wheel")) return handleWheel(request, env, pathname);
     if (pathname.startsWith("/api/prediction")) return handlePrediction(request, env, pathname);
+    if (pathname.startsWith("/api/stake")) return handleStake(request);
 
     const rewritten = rewriteAssetPath(pathname);
     if (rewritten && env.ASSETS) {

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARC mfers — predictions</title>
+    <title>ARC mfers — Prediction markets</title>
     <meta name="description" content="Open testing for the ARC mfers prediction market. Farm points, share, and play." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,7 +13,7 @@
     />
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
-  <body>
+  <body class="predict-body">
     <div class="atmosphere" aria-hidden="true">
       <div class="wash"></div>
       <div class="grain"></div>
@@ -26,19 +26,22 @@
         <a href="/mint">mint</a>
         <a href="/apply">apply</a>
         <a href="/prediction" aria-current="page">prediction</a>
+        <a href="/stake">stake</a>
         <a href="/portfolio">portfolio</a>
         <a class="play-btn" href="/game">Play the game</a>
         <a class="wallet-btn" href="/mint">connect</a>
       </div>
     </header>
 
-    <main class="predict-page reveal is-in">
-      <section class="predict-card" id="walletPanel">
-        <p class="kicker">open test</p>
-        <h1 class="predict-title">wallet</h1>
-        <p class="predict-lead">Paste any wallet to enter the prediction desk.</p>
-        <form class="predict-form" id="enterForm">
-          <label class="apply-label" for="walletInput">wallet address</label>
+    <main class="pm-page reveal is-in">
+      <section class="pm-gate" id="walletPanel">
+        <p class="pm-kicker">Open test · points only</p>
+        <h1>Prediction markets</h1>
+        <p class="pm-lead">
+          Pick Yes or No on live events. Wrong side pays 0. Winners share the pool.
+        </p>
+        <form class="pm-gate-form" id="enterForm">
+          <label class="apply-label" for="walletInput">Wallet address</label>
           <input
             id="walletInput"
             class="apply-input"
@@ -50,93 +53,118 @@
             maxlength="42"
             required
           />
-          <button type="submit" class="btn primary" id="btnEnter">Enter</button>
-          <button type="button" class="btn ghost" id="btnShareWallet">Share with a friend</button>
+          <div class="pm-gate-actions">
+            <button type="submit" class="btn primary" id="btnEnter">Enter desk</button>
+            <button type="button" class="btn ghost" id="btnShareWallet">Share</button>
+          </div>
         </form>
-        <p class="predict-note" id="enterNote"></p>
+        <p class="pm-note" id="enterNote"></p>
+        <ul class="pm-gate-facts">
+          <li>Any wallet can play</li>
+          <li>One bet per market</li>
+          <li>Daily faucet +500</li>
+        </ul>
       </section>
 
-      <section class="predict-desk hidden" id="deskPanel">
-        <div class="predict-top">
+      <section class="pm-desk hidden" id="deskPanel">
+        <header class="pm-hero">
           <div>
-            <p class="kicker">prediction</p>
-            <h1 class="predict-title">markets</h1>
+            <p class="pm-kicker">Live markets</p>
+            <h1>Prediction markets</h1>
+            <p class="pm-lead">Crowd odds from the pool. Test points convert later at xxx:1.</p>
           </div>
-          <div class="predict-balance">
-            <span>points</span>
+          <div class="pm-cash">
+            <span>Balance</span>
             <strong id="pointsLabel">0</strong>
+            <small>test points</small>
+          </div>
+        </header>
+
+        <div class="pm-toolbar">
+          <p class="pm-wallet" id="walletLabel">—</p>
+          <div class="pm-toolbar-actions">
+            <button type="button" class="btn primary btn-sm" id="btnFaucet">Claim faucet</button>
+            <button type="button" class="btn ghost btn-sm" id="btnShare">Share</button>
+            <button type="button" class="btn ghost btn-sm" id="btnBuy">Shop</button>
+            <button type="button" class="btn ghost btn-sm" id="btnRefresh">Refresh</button>
+            <button type="button" class="btn ghost btn-sm" id="btnLogout">Switch wallet</button>
           </div>
         </div>
+        <p class="pm-note" id="deskNote"></p>
 
-        <p class="predict-wallet" id="walletLabel">—</p>
+        <nav class="pm-tabs" id="deskTabs" aria-label="Desk sections">
+          <button type="button" class="is-on" data-tab="markets">Markets</button>
+          <button type="button" data-tab="positions">Positions</button>
+          <button type="button" data-tab="rank">Rank</button>
+        </nav>
 
-        <div class="predict-actions">
-          <button type="button" class="btn play" id="btnFaucet">Claim faucet (+500)</button>
-          <button type="button" class="btn ghost" id="btnBuy">Shop</button>
-          <button type="button" class="btn ghost" id="btnShare">Share with a friend</button>
-          <button type="button" class="btn ghost" id="btnRefresh">Refresh</button>
-          <button type="button" class="btn ghost" id="btnLogout">Switch wallet</button>
-        </div>
-        <p class="predict-note" id="deskNote"></p>
-
-        <div class="buy-soon hidden" id="buySoon" role="status">
-          <p class="kicker">shop</p>
-          <h2 class="predict-title" id="shopTitle">coming soon</h2>
-          <p id="shopBody">Spend points on rewards. Shop unlocks for ARC mfers only.</p>
-          <button type="button" class="btn ghost" id="btnBuyClose">Close</button>
-        </div>
-
-        <div class="markets-list" id="marketsList"></div>
-
-        <section class="predict-lb" id="leaderboardPanel">
-          <div class="predict-lb-head">
-            <h3>points leaderboard</h3>
-            <p class="predict-lb-meta" id="lbMeta">—</p>
+        <div class="pm-layout">
+          <div class="pm-feed is-active" id="tabMarkets">
+            <div class="pm-markets" id="marketsList"></div>
           </div>
-          <ul class="predict-lb-list" id="lbList"></ul>
-        </section>
 
-        <section class="history-block">
-          <h3>recent results</h3>
-          <ul class="history-list" id="historyList"></ul>
-        </section>
+          <aside class="pm-rail">
+            <section class="pm-panel" id="tabPositions">
+              <div class="pm-panel-head">
+                <h2>Positions</h2>
+              </div>
+              <ul class="pm-history" id="historyList"></ul>
+            </section>
 
-        <section class="predict-faq" id="faqPanel">
-          <h3>how it works</h3>
-          <details open>
-            <summary>Quick start</summary>
-            <ol>
-              <li>Enter with any wallet.</li>
-              <li>Claim the daily faucet (+500 test points).</li>
-              <li>Pick Yes or No on a market — one bet per market.</li>
-              <li>Wrong side = 0. Right side shares the pool.</li>
-            </ol>
-          </details>
-          <details>
-            <summary>Farm points</summary>
-            <p>
-              Test points are for this desk. Later they convert to real points at about
-              <strong>xxx:1</strong> (rate TBA).
-              Farm now so you’re ready when rewards go live.
-            </p>
-          </details>
-          <details>
-            <summary>Want more points?</summary>
-            <p>
-              Share with a friend (opens a tweet). You get a share bonus
-              <strong>once per day</strong> — spam clicks won’t stack.
-            </p>
-          </details>
-          <details>
-            <summary>Shop</summary>
-            <p>
-              The shop is for <strong>ARC mfers only</strong>. Everyone can play the
-              prediction markets; holders unlock the points shop later.
-            </p>
-          </details>
-        </section>
+            <section class="pm-panel" id="tabRank">
+              <div class="pm-panel-head">
+                <h2>Leaderboard</h2>
+                <p class="pm-meta" id="lbMeta">—</p>
+              </div>
+              <ul class="pm-lb" id="lbList"></ul>
+            </section>
+
+            <section class="pm-panel pm-faq" id="faqPanel">
+              <h2>How it works</h2>
+              <details open>
+                <summary>Quick start</summary>
+                <ol>
+                  <li>Enter with any wallet.</li>
+                  <li>Claim the daily faucet (+500 test points).</li>
+                  <li>Tap Yes or No, set an amount, confirm — one bet per market.</li>
+                  <li>Wrong side = 0. Right side shares the pool.</li>
+                </ol>
+              </details>
+              <details>
+                <summary>Farm points</summary>
+                <p>
+                  Test points are for this desk. Later they convert to real points at about
+                  <strong>xxx:1</strong> (rate TBA). Farm now so you’re ready when rewards go live.
+                </p>
+              </details>
+              <details>
+                <summary>Want more points?</summary>
+                <p>
+                  Share with a friend (opens a tweet). You get a share bonus
+                  <strong>once per day</strong> — spam clicks won’t stack.
+                </p>
+              </details>
+              <details>
+                <summary>Shop</summary>
+                <p>
+                  The shop is for <strong>ARC mfers only</strong>. Everyone can play the
+                  prediction markets; holders unlock the points shop later.
+                </p>
+              </details>
+            </section>
+          </aside>
+        </div>
       </section>
     </main>
+
+    <div class="pm-modal hidden" id="buySoon" role="dialog" aria-labelledby="shopTitle">
+      <div class="pm-modal-card">
+        <p class="pm-kicker">Shop</p>
+        <h2 id="shopTitle">Coming soon</h2>
+        <p id="shopBody">Spend points on rewards. Shop unlocks for ARC mfers only.</p>
+        <button type="button" class="btn ghost" id="btnBuyClose">Close</button>
+      </div>
+    </div>
 
     <footer class="footer">
       <img src="/gallery/420.png" alt="" width="28" height="28" />
