@@ -21,7 +21,12 @@ import {
   resolveExpiredMarkets,
   forceResolveOpenMarket,
   snapshotState,
+  stakePoints,
+  unstakePoints,
+  claimStakeRewards,
+  SOFT_STAKE_APR_LABEL,
 } from "./prediction-shared.js";
+import { verifyStakeAuthorization } from "./stake-auth.js";
 
 const LB_KEY = "climb-v1";
 const WHEEL_KEY = "wheel-v1";
@@ -524,10 +529,47 @@ async function handlePrediction(request, env, pathname) {
   return json({ error: "not found" }, 404);
 }
 
-async function handleStake(request) {
+async function handleStake(request, env, pathname) {
   if (request.method === "OPTIONS") return json({ ok: true });
-  // Soft stake stays local until we flip it live.
-  return json({ error: "soft stake coming soon" }, 503);
+  if (request.method !== "POST") return json({ error: "method not allowed" }, 405);
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "bad json" }, 400);
+  }
+
+  const wallet = normalizeWallet(body?.wallet);
+  if (!wallet) return json({ error: "valid wallet address required (0x…)" }, 400);
+
+  const auth = verifyStakeAuthorization({
+    wallet,
+    signature: body?.signature,
+    issuedAt: body?.issuedAt,
+  });
+  if (!auth.ok) return json({ error: auth.error }, auth.status);
+
+  const prediction = await readPrediction(env);
+  let result = { ok: true };
+
+  if (pathname === "/api/stake/stake") {
+    result = stakePoints(prediction, wallet, body?.amount);
+  } else if (pathname === "/api/stake/unstake") {
+    result = unstakePoints(prediction, wallet, body?.amount);
+  } else if (pathname === "/api/stake/claim") {
+    result = claimStakeRewards(prediction, wallet);
+  } else if (pathname !== "/api/stake/enter" && pathname !== "/api/stake/state") {
+    return json({ error: "not found" }, 404);
+  }
+
+  if (result.error) return json({ error: result.error }, result.status);
+
+  // snapshotState accrues elapsed rewards. Persist after the snapshot so a
+  // refresh cannot repeatedly accrue the same time window.
+  const snapshot = predictionSnap(prediction, wallet, isMintWhitelisted(wallet));
+  await writePrediction(env, prediction);
+  return json({ ...result, softAprLabel: SOFT_STAKE_APR_LABEL, ...snapshot });
 }
 
 function rewriteAssetPath(pathname) {
@@ -555,7 +597,7 @@ export default {
     if (pathname === "/api/leaderboard") return handleLeaderboard(request, env);
     if (pathname.startsWith("/api/wheel")) return handleWheel(request, env, pathname);
     if (pathname.startsWith("/api/prediction")) return handlePrediction(request, env, pathname);
-    if (pathname.startsWith("/api/stake")) return handleStake(request);
+    if (pathname.startsWith("/api/stake")) return handleStake(request, env, pathname);
 
     const rewritten = rewriteAssetPath(pathname);
     if (rewritten && env.ASSETS) {
