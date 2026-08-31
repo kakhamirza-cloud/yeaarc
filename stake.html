@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARC mfers — stake coming soon</title>
+    <title>ARC mfers — soft stake beta</title>
     <meta
       name="description"
-      content="Soft lock your points. Earn while Arc warms up. Coming soon."
+      content="Soft stake ARC mfers test points off-chain while Arc warms up."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -45,9 +45,9 @@
           <img class="stake-mfer" src="/gallery/420.png" alt="" width="180" height="180" />
         </div>
         <div class="stake-gate-copy">
-          <p class="stake-eyebrow" id="gateEyebrow">coming soon</p>
+          <p class="stake-eyebrow" id="gateEyebrow">public beta</p>
           <h1 class="stake-mega">stake</h1>
-          <p class="stake-sub">soft lock your points. earn while arc warms up.</p>
+          <p class="stake-sub">soft lock test points. earn while arc warms up.</p>
 
           <div id="soonCopy">
             <div class="stake-soon-actions">
@@ -63,21 +63,12 @@
 
           <div class="hidden" id="walletPanel">
             <form class="stake-enter" id="enterForm">
-              <label class="sr-only" for="walletInput">wallet</label>
-              <input
-                id="walletInput"
-                class="stake-input"
-                type="text"
-                inputmode="text"
-                autocomplete="off"
-                spellcheck="false"
-                placeholder="paste wallet 0x…"
-                maxlength="42"
-                required
-              />
-              <button type="submit" class="stake-cta" id="btnEnter">enter the vault</button>
+              <button type="submit" class="stake-cta" id="btnEnter">connect + sign to enter</button>
             </form>
             <p class="predict-note" id="enterNote"></p>
+            <p class="stake-aside">
+              off-chain beta · test points only · no tokens move · signature expires in 15 minutes
+            </p>
             <p class="stake-aside">
               need points? <a href="/prediction">farm prediction first →</a>
             </p>
@@ -100,7 +91,7 @@
           </div>
 
           <div class="stake-vault-copy">
-            <p class="stake-eyebrow">soft vault · live tick</p>
+            <p class="stake-eyebrow">soft vault · public beta · off-chain</p>
             <h2 class="stake-mega stake-mega-sm">your pool</h2>
             <p class="stake-wallet-line">
               <span id="walletLabel">—</span>
@@ -195,7 +186,7 @@
 
     <footer class="footer">
       <img src="/gallery/420.png" alt="" width="28" height="28" />
-      <span>ARC mfers · soft stake · Arc Chain</span>
+      <span>ARC mfers · off-chain soft stake beta</span>
     </footer>
 
     <script type="module" src="/src/stake.js"></script>

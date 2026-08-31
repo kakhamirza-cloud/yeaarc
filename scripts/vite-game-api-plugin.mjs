@@ -30,6 +30,7 @@ import {
   claimStakeRewards,
   SOFT_STAKE_APR_LABEL,
 } from "../src/prediction-shared.js";
+import { verifyStakeAuthorization } from "../src/stake-auth.js";
 
 const TOP_PUBLIC = 10;
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -467,11 +468,18 @@ export function viteGameApiPlugin() {
           if (!data) return send(res, 400, { error: "bad json" });
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          const auth = verifyStakeAuthorization({
+            wallet,
+            signature: data?.signature,
+            issuedAt: data?.issuedAt,
+          });
+          if (!auth.ok) return send(res, auth.status, { error: auth.error });
+          const snapshot = predictionSnap(prediction, wallet);
           savePredictionState(prediction);
           return send(res, 200, {
             ok: true,
             softAprLabel: SOFT_STAKE_APR_LABEL,
-            ...predictionSnap(prediction, wallet),
+            ...snapshot,
           });
         }
 
@@ -482,13 +490,20 @@ export function viteGameApiPlugin() {
           if (!data) return send(res, 400, { error: "bad json" });
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          const auth = verifyStakeAuthorization({
+            wallet,
+            signature: data?.signature,
+            issuedAt: data?.issuedAt,
+          });
+          if (!auth.ok) return send(res, auth.status, { error: auth.error });
           const result = stakePoints(prediction, wallet, data?.amount);
           if (result.error) return send(res, result.status, { error: result.error });
+          const snapshot = predictionSnap(prediction, wallet);
           savePredictionState(prediction);
           return send(res, 200, {
             ...result,
             softAprLabel: SOFT_STAKE_APR_LABEL,
-            ...predictionSnap(prediction, wallet),
+            ...snapshot,
           });
         }
 
@@ -499,13 +514,20 @@ export function viteGameApiPlugin() {
           if (!data) return send(res, 400, { error: "bad json" });
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          const auth = verifyStakeAuthorization({
+            wallet,
+            signature: data?.signature,
+            issuedAt: data?.issuedAt,
+          });
+          if (!auth.ok) return send(res, auth.status, { error: auth.error });
           const result = unstakePoints(prediction, wallet, data?.amount);
           if (result.error) return send(res, result.status, { error: result.error });
+          const snapshot = predictionSnap(prediction, wallet);
           savePredictionState(prediction);
           return send(res, 200, {
             ...result,
             softAprLabel: SOFT_STAKE_APR_LABEL,
-            ...predictionSnap(prediction, wallet),
+            ...snapshot,
           });
         }
 
@@ -516,13 +538,20 @@ export function viteGameApiPlugin() {
           if (!data) return send(res, 400, { error: "bad json" });
           const wallet = normalizeWallet(data?.wallet);
           if (!wallet) return send(res, 400, { error: "valid wallet address required (0x…)" });
+          const auth = verifyStakeAuthorization({
+            wallet,
+            signature: data?.signature,
+            issuedAt: data?.issuedAt,
+          });
+          if (!auth.ok) return send(res, auth.status, { error: auth.error });
           const result = claimStakeRewards(prediction, wallet);
           if (result.error) return send(res, result.status, { error: result.error });
+          const snapshot = predictionSnap(prediction, wallet);
           savePredictionState(prediction);
           return send(res, 200, {
             ...result,
             softAprLabel: SOFT_STAKE_APR_LABEL,
-            ...predictionSnap(prediction, wallet),
+            ...snapshot,
           });
         }
 

@@ -11,6 +11,7 @@
     "prebuild": "node scripts/parse-whitelist.mjs && node scripts/sync-art.mjs",
     "build": "vite build",
     "build:cf": "node scripts/build-cf.mjs",
+    "test": "node --test tests/*.test.mjs",
     "preview": "vite preview",
     "deploy": "npm run build:cf && wrangler deploy",
     "deploy:pages": "npm run build:cf && wrangler pages deploy dist --project-name=yeaarc",

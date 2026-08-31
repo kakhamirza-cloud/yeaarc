@@ -1,3 +1,9 @@
+import { BrowserProvider } from "ethers";
+import {
+  buildStakeAuthMessage,
+  STAKE_AUTH_TTL_MS,
+} from "./stake-auth.js";
+
 const WALLET_KEY = "arc-predict-wallet";
 const CIRC = 2 * Math.PI * 52;
 
@@ -8,7 +14,6 @@ const els = {
   gateEyebrow: document.getElementById("gateEyebrow"),
   deskPanel: document.getElementById("deskPanel"),
   enterForm: document.getElementById("enterForm"),
-  walletInput: document.getElementById("walletInput"),
   enterNote: document.getElementById("enterNote"),
   walletLabel: document.getElementById("walletLabel"),
   availLabel: document.getElementById("availLabel"),
@@ -41,13 +46,8 @@ let rewards = 0;
 let mode = "stake";
 let aprDaily = 0.05;
 let tickTimer = 0;
-
-/** Public /stake is coming soon. Vault only with ?desk=1 on localhost. */
-function deskIsOpen() {
-  const host = location.hostname;
-  const local = host === "localhost" || host === "127.0.0.1";
-  return local && new URLSearchParams(location.search).get("desk") === "1";
-}
+let signature = "";
+let authIssuedAt = 0;
 
 function show(panel) {
   const soon = panel === "soon";
@@ -60,7 +60,7 @@ function show(panel) {
   els.deskPanel.classList.toggle("hidden", !desk);
 
   if (els.gateEyebrow) {
-    els.gateEyebrow.textContent = soon ? "coming soon" : "arc mfers";
+    els.gateEyebrow.textContent = soon ? "coming soon" : "public beta";
   }
 
   if (desk) {
@@ -109,18 +109,52 @@ function animateNumber(el, to, { decimals = 0 } = {}) {
 }
 
 async function api(path, body) {
+  await ensureAuthorization();
   const res = await fetch(path, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      ...body,
+      wallet,
+      signature,
+      issuedAt: authIssuedAt,
+    }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    if (res.status === 401) {
+      signature = "";
+      authIssuedAt = 0;
+    }
     const err = new Error(data?.error || "request failed");
     err.status = res.status;
     throw err;
   }
   return data;
+}
+
+function authorizationIsFresh() {
+  return Boolean(
+    wallet &&
+      signature &&
+      authIssuedAt &&
+      Date.now() - authIssuedAt < STAKE_AUTH_TTL_MS - 30_000
+  );
+}
+
+async function ensureAuthorization() {
+  if (authorizationIsFresh()) return;
+  if (!window.ethereum) {
+    throw new Error("No wallet found. Install or open a browser wallet first.");
+  }
+
+  const provider = new BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  const signer = await provider.getSigner();
+  wallet = (await signer.getAddress()).toLowerCase();
+  authIssuedAt = Date.now();
+  signature = await signer.signMessage(buildStakeAuthMessage(wallet, authIssuedAt));
+  localStorage.setItem(WALLET_KEY, wallet);
 }
 
 function setMode(next) {
@@ -196,8 +230,7 @@ function stopTick() {
 }
 
 async function enterDesk() {
-  const data = await api("/api/stake/enter", { wallet });
-  localStorage.setItem(WALLET_KEY, wallet);
+  const data = await api("/api/stake/enter", {});
   show("desk");
   renderDesk(data);
   note(els.deskNote, "", true);
@@ -205,8 +238,7 @@ async function enterDesk() {
 
 els.enterForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  note(els.enterNote, "…");
-  wallet = els.walletInput.value.trim();
+  note(els.enterNote, "connect your wallet, then sign the off-chain authorization…");
   try {
     await enterDesk();
     note(els.enterNote, "");
@@ -236,7 +268,7 @@ els.stakeForm.addEventListener("submit", async (e) => {
   note(els.deskNote, "…");
   try {
     const path = mode === "unstake" ? "/api/stake/unstake" : "/api/stake/stake";
-    const data = await api(path, { wallet, amount });
+    const data = await api(path, { amount });
     renderDesk(data);
     startTick();
     note(
@@ -253,7 +285,7 @@ els.stakeForm.addEventListener("submit", async (e) => {
 els.btnClaim.addEventListener("click", async () => {
   note(els.deskNote, "…");
   try {
-    const data = await api("/api/stake/claim", { wallet });
+    const data = await api("/api/stake/claim", {});
     renderDesk(data);
     startTick();
     note(els.deskNote, `claimed +${data.claimed}`, true);
@@ -264,7 +296,7 @@ els.btnClaim.addEventListener("click", async () => {
 
 els.btnRefresh.addEventListener("click", async () => {
   try {
-    const data = await api("/api/stake/state", { wallet });
+    const data = await api("/api/stake/state", {});
     renderDesk(data);
     startTick();
     note(els.deskNote, "synced.", true);
@@ -275,6 +307,8 @@ els.btnRefresh.addEventListener("click", async () => {
 
 els.btnLogout.addEventListener("click", () => {
   wallet = "";
+  signature = "";
+  authIssuedAt = 0;
   localStorage.removeItem(WALLET_KEY);
   show("wallet");
   note(els.enterNote, "");
@@ -286,12 +320,10 @@ async function boot() {
     els.dialFill.style.strokeDasharray = `${CIRC}`;
     els.dialFill.style.strokeDashoffset = `${CIRC}`;
   }
-  if (deskIsOpen()) {
-    show("wallet");
-    if (wallet) els.walletInput.value = wallet;
-    return;
+  show("wallet");
+  if (wallet) {
+    note(els.enterNote, `reconnect ${shortWallet(wallet)} to open the vault`);
   }
-  show("soon");
 }
 
 boot();
